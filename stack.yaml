@@ -1,0 +1,7 @@
+resolver: lts-9.5
+packages:
+- .
+extra-deps:
+- diff-parse-0.2.1
+flags: {}
+extra-package-dbs: []

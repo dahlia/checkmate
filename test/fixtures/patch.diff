@@ -1,0 +1,24 @@
+diff --git a/sample.py b/sample.py
+--- a/sample.py
++++ b/sample.py
+@@ -12,7 +12,7 @@ def other_func():
+ 
+     def inner_func():
+         # CHECK nested function-level check
+-        pass
++        return
+ 
+ 
+ class some_cls:
+diff --git a/subdir/inner_sample.js b/subdir/inner_sample.js
+--- a/subdir/inner_sample.js
++++ b/subdir/inner_sample.js
+@@ -11,7 +11,7 @@ function otherFunc() {
+ 
+     function innerFunc() {
+         // CHECK closure check
+-        return true;
++        return false;
+     }
+ 
+     return innerFunc;
