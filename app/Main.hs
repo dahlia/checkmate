@@ -12,7 +12,11 @@ import Checkmate.Discover
 
 data App = App
     { inputFilePath :: FilePath
-    } deriving (Show)
+    , appCommand :: Command
+    }
+
+newtype Command
+    = PrintText (Checklist -> Text)
 
 withInputFile :: App -> (Handle -> IO r) -> IO r
 withInputFile App { inputFilePath = "-" } action' = do
@@ -32,6 +36,17 @@ appP = App
                   <> value "-"
                   <> help "perform"
                   )
+    <*> subparser (  command "commonmark" commonMarkPI
+                  <> command "gfm" gfmPI
+                  )
+
+commonMarkPI :: ParserInfo Command
+commonMarkPI = info (pure $ PrintText (`toCommonMark` "")) $
+    progDesc "Print a checklist as CommonMark (i.e. Markdown) format."
+
+gfmPI :: ParserInfo Command
+gfmPI = info (pure $ PrintText toGFMarkdown) $
+    progDesc "Print a checklist as GitHub Flavored Markdown format."
 
 appPI :: ParserInfo App
 appPI = info (appP <**> helper)
@@ -40,20 +55,26 @@ appPI = info (appP <**> helper)
     )
 
 toGFMarkdown :: Checklist -> Text
-toGFMarkdown checklist =
+toGFMarkdown = (`toCommonMark` "[ ] ")
+
+toCommonMark :: Checklist -> Text -> Text
+toCommonMark checklist prefix =
     intercalate
         "\n"
-        [ " -  [ ] " `append` replace "\n" "\n    " t
+        [ " -  " `append` prefix `append` replace "\n" "\n    " t
         | Check { checkText = t } <- toList checklist
         ]
 
+runCommand :: Command -> Checklist -> IO ()
+runCommand (PrintText renderText) = TIO.putStrLn . renderText
+
 main :: IO ()
 main = do
-    app <- execParser appPI
+    app@App { appCommand = cmd' } <- execParser appPI
     cwd <- getCurrentDirectory
     diff <- withInputFile app TIO.hGetContents
     case parseDiff diff of
-        Left msg -> System.IO.putStr msg
+        Left msg -> System.IO.putStrLn msg
         Right deltas -> do
             checklist <- discover cwd deltas
-            TIO.putStrLn $ toGFMarkdown checklist
+            runCommand cmd' checklist
