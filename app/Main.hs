@@ -10,13 +10,12 @@ import System.Directory
 import Checkmate.Check
 import Checkmate.Discover
 
+type Command = App -> Checklist -> IO ()
+
 data App = App
     { inputFilePath :: FilePath
     , appCommand :: Command
     }
-
-newtype Command
-    = PrintText (Checklist -> Text)
 
 withInputFile :: App -> (Handle -> IO r) -> IO r
 withInputFile App { inputFilePath = "-" } action' = do
@@ -41,12 +40,18 @@ appP = App
                   )
 
 commonMarkPI :: ParserInfo Command
-commonMarkPI = info (pure $ PrintText (`toCommonMark` "")) $
+commonMarkPI = info (pure cmd) $
     progDesc "Print a checklist as CommonMark (i.e. Markdown) format."
+  where
+    cmd :: Command
+    cmd _ = TIO.putStr . (`toCommonMark` "")
 
 gfmPI :: ParserInfo Command
-gfmPI = info (pure $ PrintText toGFMarkdown) $
+gfmPI = info (pure cmd) $
     progDesc "Print a checklist as GitHub Flavored Markdown format."
+  where
+    cmd :: Command
+    cmd _ = TIO.putStr . toGFMarkdown
 
 appPI :: ParserInfo App
 appPI = info (appP <**> helper)
@@ -65,9 +70,6 @@ toCommonMark checklist prefix =
         | Check { checkText = t } <- toList checklist
         ]
 
-runCommand :: Command -> Checklist -> IO ()
-runCommand (PrintText renderText) = TIO.putStrLn . renderText
-
 main :: IO ()
 main = do
     app@App { appCommand = cmd' } <- execParser appPI
@@ -77,4 +79,4 @@ main = do
         Left msg -> System.IO.putStrLn msg
         Right deltas -> do
             checklist <- discover cwd deltas
-            runCommand cmd' checklist
+            cmd' app checklist
