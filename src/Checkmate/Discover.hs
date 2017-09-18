@@ -14,7 +14,7 @@ import System.FilePath
 import Text.Diff.Parse (parseDiff)
 import Text.Diff.Parse.Types
 
-import Checkmate.Check hiding (toList)
+import Checkmate.Check
 import Checkmate.Diff
 import Checkmate.Parser.CheckFile
 import Checkmate.Parser.IndentBlock

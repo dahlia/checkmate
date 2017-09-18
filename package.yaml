@@ -34,6 +34,7 @@ executables:
     source-dirs: app
     dependencies:
     - checkmate
+    - github == 0.16.*
     - optparse-applicative >= 0.13.2.0 && < 0.15.0.0
     ghc-options:
     - -fwarn-incomplete-uni-patterns

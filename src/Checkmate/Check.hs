@@ -2,7 +2,6 @@ module Checkmate.Check
     ( Check (Check, checkOrderIndex, checkScope, checkText)
     , Checklist
     , Scope (Directory, FileBlock, scopePath, scopeRange)
-    , toList
     , union
     ) where
 
@@ -36,6 +35,3 @@ instance Ord Check where
         tup (Check scope orderIndex text) = (scopePath scope, orderIndex, text)
 
 type Checklist = Set Check
-
-toList :: Checklist -> [Check]
-toList = toAscList
