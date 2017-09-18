@@ -6,6 +6,7 @@ addons:
   apt:
     packages:
     - libgmp-dev
+    - upx-ucl
 before_install:
 - mkdir -p ~/.local/bin
 - export PATH=$HOME/.local/bin:$PATH
@@ -14,3 +15,32 @@ install:
 - stack --no-terminal --install-ghc test --only-dependencies
 script:
 - stack --no-terminal test --haddock --no-haddock-deps
+before_deploy:
+- |
+  # https://www.fpcomplete.com/blog/2016/10/static-compilation-with-stack#crtbegint-swap
+  for d in $(dirname /usr/lib/gcc/x86_64-linux-gnu/*/crtbeginT.o); do
+    pushd $d;
+    sudo mv crtbeginT.o crtbeginT.o.orig;
+    sudo cp crtbeginS.o crtbeginT.o;
+    popd;
+  done
+- stack --no-terminal build --copy-bins
+- mkdir -p /tmp/checkmate-build
+- cp "$(stack --no-terminal path --local-bin)/checkmate" "/tmp/checkmate-build/checkmate-$(uname -s | tr '[A-Z]' '[a-z]')-$(uname -m)"
+- upx-ucl -9 /tmp/checkmate-build/checkmate-*
+deploy:
+- provider: releases
+  api_key: "$GITHUB_ACCESS_TOKEN"
+  file_glob: true
+  file: /tmp/checkmate-build/checkmate-*
+  skip_cleanup: true
+  on:
+    tags: true
+after_deploy:
+# We don't use Travis' Hackage provider since we shouldn't build dists twice
+- mkdir -p ~/.stack/upload
+- |
+  python -c 'import json, os; print(json.dumps({"username": os.environ["HACKAGE_USERNAME"], "password": os.environ["HACKAGE_PASSWORD"]}))' > ~/.stack/upload/credentials.json
+- "sed -i 's/^- -Werror$//g' package.yaml"   # Hackage disallows -Werror
+- stack --no-terminal sdist --ignore-check
+- stack --no-terminal upload --ignore-check --no-signature .
