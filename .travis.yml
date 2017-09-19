@@ -14,6 +14,9 @@ before_install:
 install:
 - stack --no-terminal --install-ghc test --only-dependencies
 script:
+- |
+  [[ "$TRAVIS_TAG" = "" || \
+     "$(stack query locals checkmate version)" == "'$TRAVIS_TAG'" ]]
 - stack --no-terminal test --haddock --no-haddock-deps
 before_deploy:
 - |
