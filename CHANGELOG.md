@@ -4,7 +4,7 @@ Checkmate changelog
 Version 0.1.1
 -------------
 
-To be released.
+Released on September 20, 2017.
 
 ### Program
 
