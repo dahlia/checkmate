@@ -18,6 +18,14 @@ script:
   [[ "$TRAVIS_TAG" = "" || \
      "$(stack query locals checkmate version)" == "'$TRAVIS_TAG'" ]]
 - stack --no-terminal test --haddock --no-haddock-deps
+- |
+  if [[ "$TRAVIS_PULL_REQUEST" != "false" ]]; then
+    git diff "$TRAVIS_COMMIT_RANGE" | stack exec -- checkmate github \
+      --token "$CHECKMATE_GITHUB_ACCESS_TOKEN" \
+      --login "${TRAVIS_REPO_SLUG%%/[^/]*}" \
+      --repo "${TRAVIS_REPO_SLUG#[^/]*/}" \
+      --pr "$TRAVIS_PULL_REQUEST"
+  fi
 before_deploy:
 - |
   # https://www.fpcomplete.com/blog/2016/10/static-compilation-with-stack#crtbegint-swap
