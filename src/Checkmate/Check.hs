@@ -5,7 +5,7 @@ module Checkmate.Check
     , union
     ) where
 
-import Data.Set hiding (toList)
+import Data.Set
 import Data.Text
 import Data.Range.Range hiding (union)
 import System.FilePath

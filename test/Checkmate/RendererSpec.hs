@@ -14,15 +14,15 @@ import Checkmate.Renderer
 
 fixture :: Checklist
 fixture =
-    [ Check (Directory $ "foo" </> "bar") 1
+    [ Check (Directory $ "b" </> "foo" </> "bar" </> ".") 1
             "Lorem ipsum dolor sit amet,"
-    , Check (Directory $ "foo" </> "bar") 2
+    , Check (Directory $ "b" </> "foo" </> "bar" </> ".") 2
             "consectetur adipiscing elit,"
-    , Check (Directory $ "foo" </> "bar") 3
+    , Check (Directory $ "b" </> "foo" </> "bar" </> ".") 3
             "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-    , Check (FileBlock ("foo" </> "bar" </> "baz.c") $ SpanRange 8 21) 1
+    , Check (FileBlock ("b" </> "foo" </> "bar" </> "baz.c") $ SpanRange 8 21) 1
             "Ut enim ad minim veniam,"
-    , Check (FileBlock ("foo" </> "bar" </> "baz.c") $ SpanRange 9 21) 2 $
+    , Check (FileBlock ("b" </> "foo" </> "bar" </> "baz.c") $ SpanRange 9 21) 2 $
             "quis nostrud exercitation ullamco laboris nisi ut\n" `append`
             "aliquip ex ea commodo consequat."
     ]
@@ -33,21 +33,31 @@ thinkingFace = "\x1f914"
 spec :: Spec
 spec = do
     specify "toCommonMark" $
-        toCommonMark fixture `shouldBe` [qq|### Checklist  $thinkingFace
+        toCommonMark "b" 1 fixture `shouldBe` [qq|# Checklist  $thinkingFace
+
+## `foo/bar/`
 
  -  Lorem ipsum dolor sit amet,
  -  consectetur adipiscing elit,
  -  sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+## `foo/bar/baz.c`
+
  -  Ut enim ad minim veniam,
  -  quis nostrud exercitation ullamco laboris nisi ut
     aliquip ex ea commodo consequat.
 |]
     specify "toGFMarkdown" $
-        toGFMarkdown fixture `shouldBe` [qq|### Checklist  $thinkingFace
+        toGFMarkdown "b" 3 fixture `shouldBe` [qq|### Checklist  $thinkingFace
+
+#### `foo/bar/`
 
  -  [ ] Lorem ipsum dolor sit amet,
  -  [ ] consectetur adipiscing elit,
  -  [ ] sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+#### `foo/bar/baz.c`
+
  -  [ ] Ut enim ad minim veniam,
  -  [ ] quis nostrud exercitation ullamco laboris nisi ut
     aliquip ex ea commodo consequat.

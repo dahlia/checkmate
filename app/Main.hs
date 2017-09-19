@@ -62,14 +62,18 @@ commonmarkPI = info (pure cmd) $
     progDesc "Print a checklist as CommonMark (i.e. Markdown) format."
   where
     cmd :: Command
-    cmd _ = TIO.putStr . toCommonMark
+    cmd _ checklist = do
+        cwd <- getCurrentDirectory
+        TIO.putStr $ toCommonMark cwd 1 checklist
 
 gfmPI :: ParserInfo Command
 gfmPI = info (pure cmd) $
     progDesc "Print a checklist as GitHub Flavored Markdown format."
   where
     cmd :: Command
-    cmd _ = TIO.putStr . toGFMarkdown
+    cmd _ checklist = do
+        cwd <- getCurrentDirectory
+        TIO.putStr $ toGFMarkdown cwd 1 checklist
 
 githubPI :: ParserInfo Command
 githubPI = info (parser <**> helper) $
@@ -91,8 +95,9 @@ githubPI = info (parser <**> helper) $
                 Nothing -> createComment auth owner repo pr
                 Just IssueComment { issueCommentId = cid } ->
                     editComment auth owner repo $ Id cid
+        cwd <- getCurrentDirectory
         Comment { commentHtmlUrl = leftCommentUrl } <-
-            leave (signature `append` toGFMarkdown checklist) >>= error
+            leave (signature `append` toGFMarkdown cwd 3 checklist) >>= error
         case leftCommentUrl of
             Just (URL u) -> TIO.putStrLn u
             _ -> return ()
