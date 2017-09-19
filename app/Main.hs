@@ -25,6 +25,7 @@ import System.Directory
 
 import Checkmate.Check
 import Checkmate.Discover
+import Checkmate.Renderer
 
 type Command = App -> Checklist -> IO ()
 
@@ -163,20 +164,6 @@ appPI = info (appP <**> helper)
     (  fullDesc
     <> progDesc "Generate checklists relevant to a given patch."
     )
-
-toCommonMark' :: Checklist -> Text -> Text
-toCommonMark' checklist itemPrefix =
-    "### Checklist  \x1f914\n\n" `append` intercalate
-        "\n"
-        [ " -  " `append` itemPrefix `append` replace "\n" "\n    " t
-        | Check { checkText = t } <- toList checklist
-        ]
-
-toGFMarkdown :: Checklist -> Text
-toGFMarkdown = (`toCommonMark'` "[ ] ")
-
-toCommonMark :: Checklist -> Text
-toCommonMark = (`toCommonMark'` "")
 
 printError :: Text -> IO a
 printError message = do

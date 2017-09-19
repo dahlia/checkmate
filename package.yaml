@@ -43,10 +43,6 @@ executables:
     - -with-rtsopts=-N
     # Static link
     - -static
-    - -optl-static
-    - -optl-pthread
-    - -optc-Os
-    - -fPIC
 tests:
   spec:
     main: Spec.hs
