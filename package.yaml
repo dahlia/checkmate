@@ -1,5 +1,5 @@
 name: checkmate
-version: '0.1.1'
+version: '0.1.2'
 synopsis: Generate checklists relevant to a given patch
 category: Development
 author: Hong Minhee
@@ -18,6 +18,11 @@ dependencies:
 - megaparsec >= 5.3.1 && < 5.4.0
 - range >= 0.1.2 && < 0.2.0
 - text == 1.*
+flags:
+  static:
+    description: Static link
+    manual: true
+    default: false
 ghc-options:
 - -Wall
 - -Werror
@@ -36,13 +41,26 @@ executables:
     - checkmate
     - github == 0.16.*
     - optparse-applicative >= 0.13.2.0 && < 0.15.0.0
-    ghc-options:
-    - -fwarn-incomplete-uni-patterns
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    # Static link
-    - -static
+    when:
+    - condition: flag(static)
+      then:
+        ghc-options:
+        - -fwarn-incomplete-uni-patterns
+        - -threaded
+        - -rtsopts
+        - -with-rtsopts=-N
+      else:
+        ghc-options:
+        - -fwarn-incomplete-uni-patterns
+        - -threaded
+        - -rtsopts
+        - -with-rtsopts=-N
+        # Static link
+        - -static
+        - -optl-static
+        - -optl-pthread
+        - -optc-Os
+        - -fPIC
 tests:
   spec:
     main: Spec.hs

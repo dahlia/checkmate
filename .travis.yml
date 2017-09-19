@@ -36,7 +36,7 @@ before_deploy:
     sudo cp crtbeginS.o crtbeginT.o;
     popd;
   done
-- stack --no-terminal build --copy-bins
+- stack --no-terminal build --copy-bins --force-dirty --flag checkmate:static
 - mkdir -p /tmp/checkmate-build
 - cp "$(stack --no-terminal path --local-bin)/checkmate" "/tmp/checkmate-build/checkmate-$(uname -s | tr '[A-Z]' '[a-z]')-$(uname -m)"
 - upx-ucl -9 /tmp/checkmate-build/checkmate-*
