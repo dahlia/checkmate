@@ -1,6 +1,15 @@
 Checkmate changelog
 ===================
 
+Version 0.1.4
+-------------
+
+Released on September 21, 2017.
+
+ -  Fixed a broken build of `checkmate` binary on the download page.
+    It was crashed on Linux distros that glibc is unavailable.
+
+
 Version 0.1.3
 -------------
 

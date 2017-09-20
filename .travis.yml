@@ -1,4 +1,6 @@
 language: generic
+services:
+- docker
 cache:
   directories:
   - $HOME/.stack
@@ -12,13 +14,13 @@ before_install:
 - export PATH=$HOME/.local/bin:$PATH
 - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 install:
-- stack --no-terminal --install-ghc test --only-dependencies --flag checkmate:static
+- stack --no-terminal --install-ghc test --only-dependencies
 script:
 - |
   [[ "$TRAVIS_TAG" = "" || \
      "$(stack query locals checkmate version)" == "'$TRAVIS_TAG'" ]]
 - '[[ "$TRAVIS_TAG" = "" ]] || ! grep -i "to be released" CHANGELOG.md'
-- stack --no-terminal test --haddock --no-haddock-deps --flag checkmate:static
+- stack --no-terminal test --haddock --no-haddock-deps
 - |
   if [[ "$TRAVIS_PULL_REQUEST" != "false" ]]; then
     git diff "$TRAVIS_COMMIT_RANGE" | stack exec -- checkmate github \
@@ -28,17 +30,10 @@ script:
       --pr "$TRAVIS_PULL_REQUEST"
   fi
 before_deploy:
-- |
-  # https://www.fpcomplete.com/blog/2016/10/static-compilation-with-stack#crtbegint-swap
-  for d in $(dirname /usr/lib/gcc/x86_64-linux-gnu/*/crtbeginT.o); do
-    pushd $d;
-    sudo mv crtbeginT.o crtbeginT.o.orig;
-    sudo cp crtbeginS.o crtbeginT.o;
-    popd;
-  done
-- stack --no-terminal build --copy-bins --force-dirty --flag checkmate:static
 - mkdir -p /tmp/checkmate-build
-- cp "$(stack --no-terminal path --local-bin)/checkmate" "/tmp/checkmate-build/checkmate-$(uname -s | tr '[A-Z]' '[a-z]')-$(uname -m)"
+- docker build -t checkmate-binary-build .
+- docker run checkmate-binary-build cat /root/.local/bin/checkmate > /tmp/checkmate-build/checkmate-"$(docker run checkmate-binary-build bash -c 'echo $(uname -s | tr "[A-Z]" "[a-z]")-$(uname -m)')"
+- chmod +x /tmp/checkmate-build/checkmate-*
 - upx-ucl -9 /tmp/checkmate-build/checkmate-*
 deploy:
 - provider: releases
