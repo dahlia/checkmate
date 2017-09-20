@@ -1,5 +1,5 @@
 name: checkmate
-version: '0.1.2'
+version: '0.1.3'
 synopsis: Generate checklists relevant to a given patch
 category: Development
 author: Hong Minhee
@@ -49,18 +49,18 @@ executables:
         - -threaded
         - -rtsopts
         - -with-rtsopts=-N
-      else:
-        ghc-options:
-        - -fwarn-incomplete-uni-patterns
-        - -threaded
-        - -rtsopts
-        - -with-rtsopts=-N
         # Static link
         - -static
         - -optl-static
         - -optl-pthread
         - -optc-Os
         - -fPIC
+      else:
+        ghc-options:
+        - -fwarn-incomplete-uni-patterns
+        - -threaded
+        - -rtsopts
+        - -with-rtsopts=-N
 tests:
   spec:
     main: Spec.hs

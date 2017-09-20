@@ -12,13 +12,13 @@ before_install:
 - export PATH=$HOME/.local/bin:$PATH
 - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 install:
-- stack --no-terminal --install-ghc test --only-dependencies
+- stack --no-terminal --install-ghc test --only-dependencies --flag checkmate:static
 script:
 - |
   [[ "$TRAVIS_TAG" = "" || \
      "$(stack query locals checkmate version)" == "'$TRAVIS_TAG'" ]]
 - '[[ "$TRAVIS_TAG" = "" ]] || ! grep -i "to be released" CHANGELOG.md'
-- stack --no-terminal test --haddock --no-haddock-deps
+- stack --no-terminal test --haddock --no-haddock-deps --flag checkmate:static
 - |
   if [[ "$TRAVIS_PULL_REQUEST" != "false" ]]; then
     git diff "$TRAVIS_COMMIT_RANGE" | stack exec -- checkmate github \
