@@ -63,10 +63,11 @@ parserSpec specName parse' = describe specName $ do
         (path, parsed) <- parse' pythonFixture
         let s = FileBlock path
         parsed `shouldParse`
-            [ Check (s $ SpanRange 2 23) 1 "module-level check"
+            [ Check (s $ SpanRange 2 24) 1 "module-level check"
             , Check (s $ SpanRange 6 7) 2 "function-level check"
             , Check (s $ SpanRange 11 15) 3 "function-level check 2"
             , Check (s $ SpanRange 14 15) 4 "nested function-level check"
-            , Check (s $ SpanRange 19 23) 5 "class-level check"
-            , Check (s $ SpanRange 22 23) 6 "method-level check"
+            , Check (s $ SpanRange 19 24) 5 "class-level check"
+            , Check (s $ SpanRange 22 24) 6
+                    "method-level check.\nIt can be multiline."
             ]

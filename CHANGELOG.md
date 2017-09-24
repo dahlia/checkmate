@@ -18,6 +18,13 @@ To be released.
         */
         ~~~
 
+     -  ~~~ c
+        // CHECK Lorem ipsum dolor sit amet, per facilis reprimique ut,
+        // ei agam invenire mel.
+        //
+        // Tacimates nominati vix ut, ea iudicabit prodesset deseruisse duo.
+        ~~~
+
 
 Version 0.1.4
 -------------

@@ -14,7 +14,7 @@ function otherFunc() {
         CHECK closure check.
         It can be multiline.
         */
-        return true;
+        return false;
     }
 
     return innerFunc;

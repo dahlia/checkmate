@@ -53,14 +53,23 @@ parser = do
     someSpaces = skipMany $ oneOf " \t"
     checkKeyword :: Parser ()
     checkKeyword = void $ string "CHECK"
+    lineCommentStart :: Parser ()
+    lineCommentStart =
+        choice [void $ oneOf "#%'", void $ string "//", void $ string "--"]
     lineCommentCheck :: Parser Text
     lineCommentCheck = do
-        choice [void $ oneOf "#%'", void $ string "//", void $ string "--"]
+        lineCommentStart
         someSpaces
         checkKeyword
         someSpaces
         chars <- many $ noneOf "\n"
-        return $ pack chars
+        nextLines <- many $ try $ do
+            void eol
+            someSpaces
+            lineCommentStart
+            someSpaces
+            many $ noneOf "\n"
+        return $ stripEnd $ pack $ Data.List.unlines $ chars : nextLines
     blockCommentPairs :: [(String, String)]
     blockCommentPairs =
         [ ("/*", "*/"), ("{-", "-}"), ("<!--", "-->"), ("<#", "#>")

@@ -65,7 +65,7 @@ subdirChecklistFixture dirPath =
 pyChecklistFixture :: FilePath -> Checklist
 pyChecklistFixture d =
     [ Check { checkScope = FileBlock { scopePath = pyPath
-                                     , scopeRange = SpanRange 2 23
+                                     , scopeRange = SpanRange 2 24
                                      }
             , checkOrderIndex = 1
             , checkText = "module-level check"

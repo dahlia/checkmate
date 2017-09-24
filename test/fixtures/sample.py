@@ -19,5 +19,6 @@ class some_cls:
     # CHECK class-level check
 
     def method(self):
-        # CHECK method-level check
+        # CHECK method-level check.
+        # It can be multiline.
         pass
