@@ -3,7 +3,7 @@
 
 
 def func():
-    # CHECK function-level check
+    # CHECK: function-level check
     pass
 
 

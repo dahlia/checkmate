@@ -41,6 +41,7 @@ parser dirPath = do
         bullet <- choice [ string "*"
                          , string "+"
                          , string "-"
+                         , string "CHECK:"
                          , string "CHECK"
                          , some digitChar >> (string "." <|> string ")")
                          ]

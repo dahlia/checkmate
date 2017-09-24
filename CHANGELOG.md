@@ -25,6 +25,8 @@ To be released.
         // Tacimates nominati vix ut, ea iudicabit prodesset deseruisse duo.
         ~~~
 
+ -  `CHECK` keywords with a colon (i.e. `CHECK:`) became matched.
+
 
 Version 0.1.4
 -------------

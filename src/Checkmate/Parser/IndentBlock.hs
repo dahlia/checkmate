@@ -53,6 +53,10 @@ parser = do
     someSpaces = skipMany $ oneOf " \t"
     checkKeyword :: Parser ()
     checkKeyword = void $ string "CHECK"
+    checkThenSpaces :: Parser ()
+    checkThenSpaces = do
+        checkKeyword
+        (char ':' >> someSpaces) <|> skipSome (oneOf " \t")
     lineCommentStart :: Parser ()
     lineCommentStart =
         choice [void $ oneOf "#%'", void $ string "//", void $ string "--"]
@@ -60,8 +64,7 @@ parser = do
     lineCommentCheck = do
         lineCommentStart
         someSpaces
-        checkKeyword
-        someSpaces
+        checkThenSpaces
         chars <- many $ noneOf "\n"
         nextLines <- many $ try $ do
             void eol
@@ -85,8 +88,7 @@ parser = do
             skipMany $ oneOf " \t\r"
             char '\n'
         innerDepth <- many indent
-        checkKeyword
-        someSpaces
+        checkThenSpaces
         chars <- manyTill anyChar (string end)
         let leftPadding = case linebreaks of
                 [] -> depth

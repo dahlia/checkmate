@@ -44,6 +44,7 @@ parserSpec specName parseFn =
             parsed `shouldParse` []
         let bulletStyles =
                 [ ("CHECK", "CHECK", "CHECK", "CHECK")
+                , ("CHECK:", "CHECK:", "CHECK:", "CHECK:")
                 , ("bullet \"*\"", "*", "*", "*")
                 , ("bullet \"-\"", "-", "-", "-")
                 , ("bullet \"+\"", "+", "+", "+")
@@ -86,7 +87,7 @@ parserSpec specName parseFn =
                 g `shouldParse` [Check dir 1 "foo"]
         it "parses well even if bullet styles are mixed" $ do
             (dir, parsed) <- parse'
-                "CHECK foo\nbar\n- baz\nqux\n* quz\n+ a\n1. b\n2) c\nCHECK d"
+                "CHECK foo\nbar\n- baz\nqux\n* quz\n+ a\n1. b\n2) c\nCHECK: d"
             parsed `shouldParse`
                 [ Check dir 1 "foo\nbar"
                 , Check dir 2 "baz\nqux"
