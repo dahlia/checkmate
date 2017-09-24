@@ -10,6 +10,7 @@ import Data.FileEmbed
 import Data.Range.Range
 import Data.Text
 import Data.Text.IO
+import Text.InterpolatedString.Perl6
 import Test.Hspec
 import Test.Hspec.Megaparsec
 import Text.Megaparsec
@@ -35,6 +36,20 @@ spec = do
             hClose handle
             parsed <- parseSourceFile filePath
             return (filePath, parsed)
+    it "parses a multiline comment" $ do
+        let parsed = parse parser "a.js" [q|
+function foo() {
+    /*
+    CHECK multiline
+    test
+    test2
+    */
+    return true;
+|]
+        parsed `shouldParse`
+            [ Check (FileBlock "a.js" $ SpanRange 3 8) 1
+                    "multiline\ntest\ntest2"
+            ]
 
 parserSpec
     :: String

@@ -6,6 +6,18 @@ Version 0.2.0
 
 To be released.
 
+ -  Now `CHECK` comments in source codes can be multiline.  The following
+    patterns are supported:
+
+     -  ~~~ c
+        /*
+        CHECK Lorem ipsum dolor sit amet, per facilis reprimique ut,
+        ei agam invenire mel.
+
+        Tacimates nominati vix ut, ea iudicabit prodesset deseruisse duo.
+        */
+        ~~~
+
 
 Version 0.1.4
 -------------

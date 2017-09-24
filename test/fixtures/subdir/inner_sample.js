@@ -10,7 +10,10 @@ function otherFunc() {
     // CHECK function-level check 2
 
     function innerFunc() {
-        // CHECK closure check
+        /*
+        CHECK closure check.
+        It can be multiline.
+        */
         return true;
     }
 

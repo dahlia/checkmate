@@ -52,14 +52,13 @@ parser = do
     someSpaces :: Parser ()
     someSpaces = skipMany $ oneOf " \t"
     checkKeyword :: Parser ()
-    checkKeyword = do
-        someSpaces
-        void $ string "CHECK"
-        someSpaces
+    checkKeyword = void $ string "CHECK"
     lineCommentCheck :: Parser Text
     lineCommentCheck = do
         choice [void $ oneOf "#%'", void $ string "//", void $ string "--"]
+        someSpaces
         checkKeyword
+        someSpaces
         chars <- many $ noneOf "\n"
         return $ pack chars
     blockCommentPairs :: [(String, String)]
@@ -67,25 +66,45 @@ parser = do
         [ ("/*", "*/"), ("{-", "-}"), ("<!--", "-->"), ("<#", "#>")
         , ("%{", "%}")
         ]
-    blockCommentCheck :: Parser Text
-    blockCommentCheck = choice $ fmap blockComment blockCommentPairs
-    blockComment :: (String, String) -> Parser Text
-    blockComment (start, end) = do
+    blockCommentCheck :: Int -> Parser Text
+    blockCommentCheck depth =
+        choice $ fmap (blockComment depth) blockCommentPairs
+    blockComment :: Int -> (String, String) -> Parser Text
+    blockComment depth (start, end) = do
         void $ string start
+        linebreaks <- many $ try $ do
+            skipMany $ oneOf " \t\r"
+            char '\n'
+        innerDepth <- many indent
         checkKeyword
+        someSpaces
         chars <- manyTill anyChar (string end)
-        return $ pack chars
+        let leftPadding = case linebreaks of
+                [] -> depth
+                _ -> sum innerDepth
+        return $ stripEnd $ pack $ stripLeftPadding leftPadding chars
     line :: Parser (FilePath, Int, Int, Line)
     line = do
         SourcePos filePath lineNo _ <- getPosition
         widths <- many indent
+        let depth = sum widths
         lineT <- choice
             [ try $ fmap CheckComment lineCommentCheck
-            , try $ fmap CheckComment blockCommentCheck
+            , try $ CheckComment <$> blockCommentCheck depth
             , try (some (noneOf "\n") >> return Line)
             , return EmptyLine
             ]
-        return (filePath, read . show . unPos $ lineNo, sum widths, lineT)
+        return (filePath, read . show . unPos $ lineNo, depth, lineT)
+    stripLeftPadding :: Int -> String -> String
+    stripLeftPadding width =
+        Data.List.unlines . fmap (lstrip width) . Data.List.lines
+      where
+        lstrip :: Int -> String -> String
+        lstrip _ [] = []
+        lstrip 0 txt = txt
+        lstrip w (' ' : xs) = lstrip (w - 1) xs
+        lstrip w txt@('\t' : xs) = if w >= 8 then lstrip (w - 8) xs else txt
+        lstrip _ txt = txt
     analyzeIndents :: Int
                    -> [(FilePath, (Int, Int), Int, Text)]
                    -> [(FilePath, Int, Int, Line)]

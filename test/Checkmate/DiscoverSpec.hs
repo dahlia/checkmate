@@ -90,22 +90,22 @@ pyChecklistFixture d =
 jsChecklistFixture :: FilePath -> Checklist
 jsChecklistFixture d =
     [ Check { checkScope = FileBlock { scopePath = jsPath
-                                     , scopeRange = SpanRange 2 18
+                                     , scopeRange = SpanRange 2 21
                                      }
             , checkOrderIndex = 1
             , checkText = "global check"
             }
     , Check { checkScope = FileBlock { scopePath = jsPath
-                                     , scopeRange = SpanRange 10 17
+                                     , scopeRange = SpanRange 10 20
                                      }
             , checkOrderIndex = 3
             , checkText = "function-level check 2"
             }
     , Check { checkScope = FileBlock { scopePath = jsPath
-                                     , scopeRange = SpanRange 13 14
+                                     , scopeRange = SpanRange 13 17
                                      }
             , checkOrderIndex = 4
-            , checkText = "closure check"
+            , checkText = "closure check.\nIt can be multiline."
             }
     ]
   where

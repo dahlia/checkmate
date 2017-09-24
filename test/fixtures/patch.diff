@@ -13,10 +13,10 @@ diff --git a/sample.py b/sample.py
 diff --git a/subdir/inner_sample.js b/subdir/inner_sample.js
 --- a/subdir/inner_sample.js
 +++ b/subdir/inner_sample.js
-@@ -11,7 +11,7 @@ function otherFunc() {
- 
-     function innerFunc() {
-         // CHECK closure check
+@@ -14,7 +14,7 @@ function otherFunc() {
+         CHECK closure check.
+         It can be multiline.
+         */
 -        return true;
 +        return false;
      }
