@@ -4,7 +4,7 @@ Checkmate changelog
 Version 0.2.0
 -------------
 
-To be released.
+Released on September 25, 2017.
 
  -  Now `CHECK` comments in source codes can be multiline.  The following
     patterns are supported:

@@ -44,6 +44,27 @@ deploy:
   on:
     tags: true
 after_deploy:
+# More metadata
+- |
+  pushd /tmp
+  curl -OL https://github.com/aktau/github-release/releases/download/v0.7.2/linux-amd64-github-release.tar.bz2
+  tar xvfj linux-amd64-github-release.tar.bz2
+  mkdir -p ~/bin/
+  mv bin/linux/amd64/github-release ~/bin/
+  chmod +x ~/bin/github-release
+  popd
+- curl -L -o ~/bin/submark https://github.com/dahlia/submark/releases/download/0.1.0/submark-linux-x86_64
+- chmod +x ~/bin/submark
+- submark -o /tmp/release-note --h2 "Version $TRAVIS_TAG" -O CHANGELOG.md
+- cat /tmp/release-note
+- |
+  GITHUB_TOKEN="$GITHUB_ACCESS_TOKEN" \
+  github-release edit \
+    --user "${TRAVIS_REPO_SLUG%%/[^/]*}" \
+    --repo "${TRAVIS_REPO_SLUG#[^/]*/}" \
+    --tag "$TRAVIS_TAG" \
+    --name "checkmate $TRAVIS_TAG" \
+    --description "$(cat /tmp/release-note)"
 # We don't use Travis' Hackage provider since we shouldn't build dists twice
 - mkdir -p ~/.stack/upload
 - |
