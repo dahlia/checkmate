@@ -20,6 +20,7 @@ script:
   [[ "$TRAVIS_TAG" = "" || \
      "$(stack query locals checkmate version)" == "'$TRAVIS_TAG'" ]]
 - '[[ "$TRAVIS_TAG" = "" ]] || ! grep -i "to be released" CHANGELOG.md'
+- '[[ "$TRAVIS_TAG" = "" ]] || grep "$TRAVIS_TAG" README.md'
 - stack --no-terminal test --haddock --no-haddock-deps
 - |
   if [[ "$TRAVIS_PULL_REQUEST" != "false" ]]; then
