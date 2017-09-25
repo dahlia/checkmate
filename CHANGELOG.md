@@ -14,6 +14,10 @@ To be released.
         -- This line had been scanned, but the parser is fixed
         -- so that it isn't scanned anymore.
 
+ -  GitHub Flavored Markdown renderer (`checkmate gfm` and
+    `Checkmate.Rendrer.toGFMarkdown`) became to ignore soft linebreaks to be
+    consistent with CommonMark renderer.
+
 
 Version 0.2.0
 -------------

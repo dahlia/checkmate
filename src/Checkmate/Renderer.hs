@@ -13,13 +13,13 @@ import System.FilePath
 import Checkmate.Check
 
 toCommonMark :: FilePath -> Int -> Checklist -> Text
-toCommonMark = toCommonMark' ""
+toCommonMark = toCommonMark' "" False
 
 toGFMarkdown :: FilePath -> Int -> Checklist -> Text
-toGFMarkdown = toCommonMark' "[ ] "
+toGFMarkdown = toCommonMark' "[ ] " True
 
-toCommonMark' :: Text -> FilePath -> Int -> Checklist -> Text
-toCommonMark' itemPrefix basePath headingLevel checklist = cat $
+toCommonMark' :: Text -> Bool -> FilePath -> Int -> Checklist -> Text
+toCommonMark' itemPrefix ignoreSoftBreak basePath headingLevel checklist = cat $
     [heading, " Checklist  \x1f914\n"] ++
     [ cat $
         (if i == (1 :: Int)
@@ -28,7 +28,7 @@ toCommonMark' itemPrefix basePath headingLevel checklist = cat $
             ) ++
           [ " -  "
           , itemPrefix
-          , replace "\n" "\n    " t
+          , replace "\n" (if ignoreSoftBreak then " " else "\n    ") t
           , "\n"
           ]
     | fileChecklist <- checks

@@ -22,7 +22,8 @@ fixture =
             "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
     , Check (FileBlock ("b" </> "foo" </> "bar" </> "baz.c") $ SpanRange 8 21) 1
             "Ut enim ad minim veniam,"
-    , Check (FileBlock ("b" </> "foo" </> "bar" </> "baz.c") $ SpanRange 9 21) 2 $
+    , Check (FileBlock ("b" </> "foo" </> "bar" </> "baz.c") $ SpanRange 9 21)
+            2 $
             "quis nostrud exercitation ullamco laboris nisi ut\n" `append`
             "aliquip ex ea commodo consequat."
     ]
@@ -59,6 +60,5 @@ spec = do
 #### `foo/bar/baz.c`
 
  -  [ ] Ut enim ad minim veniam,
- -  [ ] quis nostrud exercitation ullamco laboris nisi ut
-    aliquip ex ea commodo consequat.
+ -  [ ] quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 |]
