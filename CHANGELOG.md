@@ -6,6 +6,14 @@ Version 0.2.1
 
 To be released.
 
+ -  Fixed a parser bug which had scanned continuous inline comments of
+    unmatched styles, e.g.:
+
+        // CHECK This line is scanned.
+        // This line also is scanned.
+        -- This line had been scanned, but the parser is fixed
+        -- so that it isn't scanned anymore.
+
 
 Version 0.2.0
 -------------

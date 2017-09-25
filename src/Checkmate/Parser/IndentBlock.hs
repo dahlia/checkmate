@@ -57,19 +57,22 @@ parser = do
     checkThenSpaces = do
         checkKeyword
         (char ':' >> someSpaces) <|> skipSome (oneOf " \t")
-    lineCommentStart :: Parser ()
-    lineCommentStart =
-        choice [void $ oneOf "#%'", void $ string "//", void $ string "--"]
+    lineCommentStart :: Parser String
+    lineCommentStart = choice
+        [ do { c <- oneOf "#%'"; return [c] }
+       , string "//"
+       , string "--"
+       ]
     lineCommentCheck :: Parser Text
     lineCommentCheck = do
-        lineCommentStart
+        startSeq <- lineCommentStart
         someSpaces
         checkThenSpaces
         chars <- many $ noneOf "\n"
         nextLines <- many $ try $ do
             void eol
             someSpaces
-            lineCommentStart
+            void $ string startSeq
             someSpaces
             many $ noneOf "\n"
         return $ stripEnd $ pack $ Data.List.unlines $ chars : nextLines

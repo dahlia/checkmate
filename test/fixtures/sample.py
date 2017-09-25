@@ -17,6 +17,7 @@ def other_func():
 
 class some_cls:
     # CHECK class-level check
+    'ignore this'
 
     def method(self):
         # CHECK method-level check.
