@@ -4,7 +4,7 @@ Checkmate changelog
 Version 0.2.1
 -------------
 
-To be released.
+Released on September 26, 2017.
 
  -  Fixed a parser bug which had scanned continuous inline comments of
     unmatched styles, e.g.:
