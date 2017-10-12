@@ -31,6 +31,7 @@ library:
   source-dirs: src
   dependencies:
   - containers >= 0.5.7.1 && < 0.6.0.0
+  - github == 0.17.*
   - monad-parallel >= 0.7.2.2 && < 0.8.0.0
   ghc-options:
   - -fwarn-incomplete-uni-patterns
@@ -40,7 +41,6 @@ executables:
     source-dirs: app
     dependencies:
     - checkmate
-    - github == 0.17.*
     - optparse-applicative >= 0.13.2.0 && < 0.15.0.0
     when:
     - condition: flag(static)

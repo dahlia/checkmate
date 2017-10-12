@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-import Data.Foldable
 import Data.Maybe
 import Data.Semigroup ((<>))
 import Prelude hiding (error)
@@ -7,29 +6,15 @@ import System.Environment
 import System.Exit
 import System.IO
 
-import Data.Text hiding (find, null)
+import Data.Text
 import Data.Text.Encoding
 import Data.Text.IO as TIO
-import GitHub.Auth
-import GitHub.Data.Comments
-import GitHub.Data.Definitions
-import GitHub.Data.Id
-import GitHub.Data.Issues
-import GitHub.Data.Name
-import GitHub.Data.Repos
-import GitHub.Data.URL
-import GitHub.Endpoints.Issues.Comments
-    ( comments'
-    , createComment
-    , deleteComment
-    , editComment
-    )
-import GitHub.Endpoints.Users (userInfoCurrent')
 import Options.Applicative
 import System.Directory
 
 import Checkmate.Check
 import Checkmate.Discover
+import Checkmate.Publisher.GitHub
 import Checkmate.Renderer
 
 type Command = App -> Checklist -> IO ()
@@ -85,57 +70,25 @@ githubPI = info (parser <**> helper) $
     progDesc $ "Create a checklist comment on the corresponding pull " ++
                "reuqest on GitHub."
   where
-    cmd :: Maybe (Name Owner)
-        -> Name Repo
-        -> Id Issue
+    cmd :: Maybe OwnerName
+        -> RepoName
+        -> IssueId
         -> Token
         -> Maybe Text
         -> Command
     cmd owner' repo pr accessToken endpoint _ checklist = do
-        user <- userInfoCurrent' auth >>= error
-        let owner = fromMaybe (N . untagName $ userLogin user) owner'
-        prComments <- comments' (Just auth) owner repo pr >>= error
-        let checklistComment = find (isChecklist user) prComments
-        if null checklist
-            then
-                case checklistComment of
-                        Nothing -> return ()
-                        Just IssueComment { issueCommentId = cid } ->
-                            deleteComment auth owner repo (Id cid) >>= error
-            else do
-                let leave = case checklistComment of
-                        Nothing -> createComment auth owner repo pr
-                        Just IssueComment { issueCommentId = cid } ->
-                            editComment auth owner repo $ Id cid
-                cwd <- getCurrentDirectory
-                Comment { commentHtmlUrl = leftCommentUrl } <-
-                    leave (signature `append` toGFMarkdown cwd 3 checklist) >>= error
-                case leftCommentUrl of
-                    Just (URL u) -> TIO.putStrLn u
-                    _ -> return ()
-      where
-        auth :: Auth
-        auth = case endpoint of
-            Nothing -> OAuth accessToken
-            Just e -> EnterpriseOAuth e accessToken
-        signature :: Text
-        signature = "<!-- COMMENT BY CHECKMATE -->\n"
-        isChecklist :: User -> IssueComment -> Bool
-        isChecklist User { userId = uid }
-                    IssueComment { issueCommentBody = cBody
-                                 , issueCommentUser =
-                                       SimpleUser { simpleUserId = authorId }
-                                 } =
-            uid == authorId && isPrefixOf signature cBody
-    error :: Either Error a -> IO a
-    error (Right v) = return v
-    error (Left (HTTPError httpError)) = printError $ pack $ show httpError
-    error (Left (ParseError message)) = printError message
-    error (Left (JsonError message)) = printError message
-    error (Left (UserError message)) = printError message
+        cwd <- getCurrentDirectory
+        r <- leaveComment owner' repo pr accessToken endpoint cwd checklist
+        case r of
+            Right Nothing -> return ()
+            Right (Just (URL url)) -> TIO.putStrLn url
+            Left (HTTPError httpError) -> printError $ pack $ show httpError
+            Left (ParseError message) -> printError message
+            Left (JsonError message) -> printError message
+            Left (UserError message) -> printError message
     parser :: Parser Command
     parser = cmd
-        <$> option (Just . (N :: Text -> Name Owner) . pack <$> str)
+        <$> option (Just . (N :: Text -> OwnerName) . pack <$> str)
             (  long "owner"
             <> long "login"
             <> short 'l'
@@ -146,7 +99,7 @@ githubPI = info (parser <**> helper) $
                      "\"github.com/foo/bar\".  The currently authenticated " ++
                      "user (through -t/--access-token/--token) by default")
             )
-        <*> option ((N :: Text -> Name Repo) . pack <$> str)
+        <*> option ((N :: Text -> RepoName) . pack <$> str)
             (  long "repository"
             <> long "repo"
             <> short 'r'
@@ -154,7 +107,7 @@ githubPI = info (parser <**> helper) $
             <> help ("Name of GitHub repository of a pull request to create " ++
                      "a checklist comment.  \"bar\" of \"github.com/foo/bar\"")
             )
-        <*> option ((Id :: Int -> Id Issue) <$> (auto :: ReadM Int))
+        <*> option ((Id :: Int -> IssueId) <$> (auto :: ReadM Int))
             (  long "pull-request"
             <> long "pr"
             <> short 'p'
