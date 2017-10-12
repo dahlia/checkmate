@@ -23,13 +23,8 @@ script:
 - '[[ "$TRAVIS_TAG" = "" ]] || grep "$TRAVIS_TAG" README.md'
 - stack --no-terminal test --haddock --no-haddock-deps
 - |
-  if [[ "$TRAVIS_PULL_REQUEST" != "false" ]]; then
-    git diff "$TRAVIS_COMMIT_RANGE" | stack exec -- checkmate github \
-      --token "$CHECKMATE_GITHUB_ACCESS_TOKEN" \
-      --login "${TRAVIS_REPO_SLUG%%/[^/]*}" \
-      --repo "${TRAVIS_REPO_SLUG#[^/]*/}" \
-      --pr "$TRAVIS_PULL_REQUEST"
-  fi
+  git diff "$TRAVIS_COMMIT_RANGE" | stack exec -- checkmate github-travis \
+    --token "$CHECKMATE_GITHUB_ACCESS_TOKEN"
 before_deploy:
 - mkdir -p /tmp/checkmate-build
 - docker build -t checkmate-binary-build .

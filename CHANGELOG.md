@@ -12,6 +12,9 @@ To be released.
     nothing to `CHECK` corresponding to the given diff.  It also removes
     the existing comment previously left by Checkmate on the same pull request.
 
+ -  Added `checkmate github-travis` command, a shortcut command of
+    `checkmate github` for Travis CI integration.
+
 ### Internals
 
  -  Added `Checkmate.Publisher` and `Checkmate.Publisher.GitHub` module.

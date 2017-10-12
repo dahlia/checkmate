@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+import Control.Monad
 import Data.Maybe
 import Data.Semigroup ((<>))
 import Prelude hiding (error)
@@ -45,6 +46,7 @@ appP = App
     <*> subparser (  command "commonmark" commonmarkPI
                   <> command "gfm" gfmPI
                   <> command "github" githubPI
+                  <> command "github-travis" githubTravisPI
                   )
 
 commonmarkPI :: ParserInfo Command
@@ -65,29 +67,39 @@ gfmPI = info (pure cmd) $
         cwd <- getCurrentDirectory
         TIO.putStr $ toGFMarkdown cwd 1 checklist
 
+githubTokenOption :: Parser Token
+githubTokenOption = option (encodeUtf8 . pack <$> str)
+    (  long "access-token"
+    <> long "token"
+    <> short 't'
+    <> metavar "TOKEN"
+    <> help "GitHub OAuth access token"
+    )
+
+leaveGithubComment :: Maybe OwnerName
+                   -> RepoName
+                   -> IssueId
+                   -> Token
+                   -> Maybe Text
+                   -> Command
+leaveGithubComment owner' repo pr accessToken endpoint _ checklist = do
+    cwd <- getCurrentDirectory
+    r <- leaveComment owner' repo pr accessToken endpoint cwd checklist
+    case r of
+        Right Nothing -> return ()
+        Right (Just (URL url)) -> TIO.putStrLn url
+        Left (HTTPError httpError) -> printError $ pack $ show httpError
+        Left (ParseError message) -> printError message
+        Left (JsonError message) -> printError message
+        Left (UserError message) -> printError message
+
 githubPI :: ParserInfo Command
 githubPI = info (parser <**> helper) $
     progDesc $ "Create a checklist comment on the corresponding pull " ++
                "reuqest on GitHub."
   where
-    cmd :: Maybe OwnerName
-        -> RepoName
-        -> IssueId
-        -> Token
-        -> Maybe Text
-        -> Command
-    cmd owner' repo pr accessToken endpoint _ checklist = do
-        cwd <- getCurrentDirectory
-        r <- leaveComment owner' repo pr accessToken endpoint cwd checklist
-        case r of
-            Right Nothing -> return ()
-            Right (Just (URL url)) -> TIO.putStrLn url
-            Left (HTTPError httpError) -> printError $ pack $ show httpError
-            Left (ParseError message) -> printError message
-            Left (JsonError message) -> printError message
-            Left (UserError message) -> printError message
     parser :: Parser Command
-    parser = cmd
+    parser = leaveGithubComment
         <$> option (Just . mkOwnerName . pack <$> str)
             (  long "owner"
             <> long "login"
@@ -114,13 +126,7 @@ githubPI = info (parser <**> helper) $
             <> metavar "NUM"
             <> help "No. of pull request to create a checklist comment"
             )
-        <*> option (encodeUtf8 . pack <$> str)
-            (  long "access-token"
-            <> long "token"
-            <> short 't'
-            <> metavar "TOKEN"
-            <> help "GitHub OAuth access token"
-            )
+        <*> githubTokenOption
         <*> option (Just . dropWhileEnd (== '/') . pack <$> str)
             (  long "enterprise-endpoint"
             <> short 'e'
@@ -128,6 +134,39 @@ githubPI = info (parser <**> helper) $
             <> value Nothing
             <> help "API endpoint URL for GitHub Enterprise (if applicable)"
             )
+
+githubTravisPI :: ParserInfo Command
+githubTravisPI = info (parser <**> helper) $
+    progDesc $ "Create a checklist comment on the corresponding pull " ++
+               "reuqest on GitHub from Travis CI. It depends on the " ++
+               "following environment variables: TRAVIS_REPO_SLUG, " ++
+               "TRAVIS_PULL_REQUEST."
+  where
+    parser :: Parser Command
+    parser = cmd <$> githubTokenOption
+    cmd :: Token -> Command
+    cmd accessToken app checklist = do
+        pr <- environ "TRAVIS_PULL_REQUEST"
+        when (pr == "false") $ printError "This is not a PR build; skipped..."
+        let prNo = mkIssueId $ read pr
+        slug <- pack <$> environ "TRAVIS_REPO_SLUG"
+        let (o, r) = Data.Text.break (== '/') slug
+            owner = mkOwnerName o
+            repo = mkRepoName $ Data.Text.drop 1 r
+        leaveGithubComment
+            (Just owner)
+            repo
+            prNo
+            accessToken
+            Nothing
+            app
+            checklist
+    environ :: String -> IO String
+    environ name = do
+        r <- lookupEnv name
+        case r of
+            Nothing -> printError $ pack name `append` " is not defined."
+            Just v -> return v
 
 appPI :: ParserInfo App
 appPI = info (appP <**> helper)

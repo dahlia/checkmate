@@ -151,14 +151,8 @@ install:
   fi
 script:
 - |
-  if [[ "$TRAVIS_PULL_REQUEST" != "false" ]]
-  then
-    git diff "$TRAVIS_COMMIT_RANGE" | ~/bin/checkmate github \
-      --token "$GITHUB_TOKEN" \
-      --login "${TRAVIS_REPO_SLUG%%/[^/]*}" \
-      --repo "${TRAVIS_REPO_SLUG#[^/]*/}" \
-      --pr "$TRAVIS_PULL_REQUEST"
-  fi
+  git diff "$TRAVIS_COMMIT_RANGE" | \
+    ~/bin/checkmate github-travis --token "$GITHUB_TOKEN"
 ~~~~~~~~
 
 
