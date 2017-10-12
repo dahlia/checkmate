@@ -88,7 +88,7 @@ githubPI = info (parser <**> helper) $
             Left (UserError message) -> printError message
     parser :: Parser Command
     parser = cmd
-        <$> option (Just . (N :: Text -> OwnerName) . pack <$> str)
+        <$> option (Just . mkOwnerName . pack <$> str)
             (  long "owner"
             <> long "login"
             <> short 'l'
@@ -99,7 +99,7 @@ githubPI = info (parser <**> helper) $
                      "\"github.com/foo/bar\".  The currently authenticated " ++
                      "user (through -t/--access-token/--token) by default")
             )
-        <*> option ((N :: Text -> RepoName) . pack <$> str)
+        <*> option (mkRepoName . pack <$> str)
             (  long "repository"
             <> long "repo"
             <> short 'r'
@@ -107,7 +107,7 @@ githubPI = info (parser <**> helper) $
             <> help ("Name of GitHub repository of a pull request to create " ++
                      "a checklist comment.  \"bar\" of \"github.com/foo/bar\"")
             )
-        <*> option ((Id :: Int -> IssueId) <$> (auto :: ReadM Int))
+        <*> option (mkIssueId <$> (auto :: ReadM Int))
             (  long "pull-request"
             <> long "pr"
             <> short 'p'

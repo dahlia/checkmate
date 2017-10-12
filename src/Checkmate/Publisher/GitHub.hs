@@ -1,14 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Checkmate.Publisher.GitHub
     ( Error (..)
-    , Id (Id)
     , IssueId
-    , Name (N)
     , OwnerName
     , RepoName
     , Token
     , URL (URL)
     , leaveComment
+    , mkIssueId
+    , mkOwnerName
+    , mkRepoName
     ) where
 
 import Control.Exception
@@ -38,6 +39,15 @@ import Checkmate.Renderer
 type IssueId = Id Issue
 type OwnerName = Name Owner
 type RepoName = Name Repo
+
+mkIssueId :: Int -> IssueId
+mkIssueId = Id
+
+mkOwnerName :: Text -> OwnerName
+mkOwnerName = N
+
+mkRepoName :: Text -> RepoName
+mkRepoName = N
 
 leaveComment :: Maybe OwnerName
              -> RepoName
