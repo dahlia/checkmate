@@ -40,7 +40,7 @@ executables:
     source-dirs: app
     dependencies:
     - checkmate
-    - github == 0.16.*
+    - github == 0.17.*
     - optparse-applicative >= 0.13.2.0 && < 0.15.0.0
     when:
     - condition: flag(static)

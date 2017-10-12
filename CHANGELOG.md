@@ -6,6 +6,10 @@ Version 0.3.0
 
 To be released.
 
+ -  `checkmate github` command became to leave no comment when there are
+    nothing to `CHECK` corresponding to the given diff.  It also removes
+    the existing comment previously left by Checkmate on the same pull request.
+
 
 Version 0.2.1
 -------------

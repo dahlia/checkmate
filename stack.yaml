@@ -1,6 +1,10 @@
 resolver: lts-9.5
 packages:
 - .
+- location:
+    git: git://github.com/dahlia/github.git
+    commit: d50776cfd72ec533a2c5667b755eba06de3c075f
+  extra-dep: true
 extra-deps:
 - diff-parse-0.2.1
 flags: {}

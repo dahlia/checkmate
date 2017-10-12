@@ -7,7 +7,7 @@ import System.Environment
 import System.Exit
 import System.IO
 
-import Data.Text hiding (find)
+import Data.Text hiding (find, null)
 import Data.Text.Encoding
 import Data.Text.IO as TIO
 import GitHub.Auth
@@ -18,7 +18,12 @@ import GitHub.Data.Issues
 import GitHub.Data.Name
 import GitHub.Data.Repos
 import GitHub.Data.URL
-import GitHub.Endpoints.Issues.Comments (comments', createComment, editComment)
+import GitHub.Endpoints.Issues.Comments
+    ( comments'
+    , createComment
+    , deleteComment
+    , editComment
+    )
 import GitHub.Endpoints.Users (userInfoCurrent')
 import Options.Applicative
 import System.Directory
@@ -91,16 +96,23 @@ githubPI = info (parser <**> helper) $
         let owner = fromMaybe (N . untagName $ userLogin user) owner'
         prComments <- comments' (Just auth) owner repo pr >>= error
         let checklistComment = find (isChecklist user) prComments
-            leave = case checklistComment of
-                Nothing -> createComment auth owner repo pr
-                Just IssueComment { issueCommentId = cid } ->
-                    editComment auth owner repo $ Id cid
-        cwd <- getCurrentDirectory
-        Comment { commentHtmlUrl = leftCommentUrl } <-
-            leave (signature `append` toGFMarkdown cwd 3 checklist) >>= error
-        case leftCommentUrl of
-            Just (URL u) -> TIO.putStrLn u
-            _ -> return ()
+        if null checklist
+            then
+                case checklistComment of
+                        Nothing -> return ()
+                        Just IssueComment { issueCommentId = cid } ->
+                            deleteComment auth owner repo (Id cid) >>= error
+            else do
+                let leave = case checklistComment of
+                        Nothing -> createComment auth owner repo pr
+                        Just IssueComment { issueCommentId = cid } ->
+                            editComment auth owner repo $ Id cid
+                cwd <- getCurrentDirectory
+                Comment { commentHtmlUrl = leftCommentUrl } <-
+                    leave (signature `append` toGFMarkdown cwd 3 checklist) >>= error
+                case leftCommentUrl of
+                    Just (URL u) -> TIO.putStrLn u
+                    _ -> return ()
       where
         auth :: Auth
         auth = case endpoint of
