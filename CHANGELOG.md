@@ -15,6 +15,10 @@ To be released.
  -  Added `checkmate github-travis` command, a shortcut command of
     `checkmate github` for Travis CI integration.
 
+ -  `checkmate` and its subcommands became to terminate with a proper non-zero
+    exit code and print messages to /dev/stderr instead of /dev/stdout when
+    it fails to read diff.
+
 ### Internals
 
  -  Added `Checkmate.Publisher` and `Checkmate.Publisher.GitHub` module.

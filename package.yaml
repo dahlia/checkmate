@@ -42,6 +42,7 @@ executables:
     dependencies:
     - checkmate
     - optparse-applicative >= 0.13.2.0 && < 0.15.0.0
+    - process >= 1.4.3.0 && < 1.5.0.0
     when:
     - condition: flag(static)
       then:

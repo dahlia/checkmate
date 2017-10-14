@@ -150,9 +150,7 @@ install:
     chmod +x ~/bin/checkmate
   fi
 script:
-- |
-  git diff "$TRAVIS_COMMIT_RANGE" | \
-    ~/bin/checkmate github-travis --token "$GITHUB_TOKEN"
+- ~/bin/checkmate github-travis --token "$GITHUB_TOKEN"
 ~~~~~~~~
 
 

@@ -1,15 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Checkmate.Publisher.GitHub
     ( Error (..)
-    , IssueId
     , OwnerName
+    , PullRequestId
     , RepoName
     , Token
     , URL (URL)
     , leaveComment
-    , mkIssueId
     , mkOwnerName
+    , mkPullRequestId
     , mkRepoName
+    , pullRequestBaseSha
     ) where
 
 import Control.Exception
@@ -23,6 +24,7 @@ import GitHub.Data.Definitions
 import GitHub.Data.Id
 import GitHub.Data.Issues
 import GitHub.Data.Name
+import GitHub.Data.PullRequests
 import GitHub.Data.Repos
 import GitHub.Data.URL
 import GitHub.Endpoints.Issues.Comments
@@ -31,17 +33,18 @@ import GitHub.Endpoints.Issues.Comments
     , deleteComment
     , editComment
     )
+import GitHub.Endpoints.PullRequests (pullRequest)
 import GitHub.Endpoints.Users (userInfoCurrent')
 
 import Checkmate.Check (Checklist)
 import Checkmate.Renderer
 
-type IssueId = Id Issue
+type PullRequestId = Id PullRequest
 type OwnerName = Name Owner
 type RepoName = Name Repo
 
-mkIssueId :: Int -> IssueId
-mkIssueId = Id
+mkPullRequestId :: Int -> PullRequestId
+mkPullRequestId = Id
 
 mkOwnerName :: Text -> OwnerName
 mkOwnerName = N
@@ -51,16 +54,16 @@ mkRepoName = N
 
 leaveComment :: Maybe OwnerName
              -> RepoName
-             -> IssueId
+             -> PullRequestId
              -> Token
              -> Maybe Text
              -> FilePath
              -> Checklist
              -> IO (Either Error (Maybe URL))
-leaveComment owner' repo pr accessToken endpoint basePath checklist = try $ do
+leaveComment owner' repo prId accessToken endpoint basePath checklist = try $ do
     user <- userInfoCurrent' auth >>= error'
     let owner = fromMaybe (N . untagName $ userLogin user) owner'
-    prComments <- comments' (Just auth) owner repo pr >>= error'
+    prComments <- comments' (Just auth) owner repo issueId' >>= error'
     let checklistComment = find (isChecklist user) prComments
     if null checklist
         then
@@ -71,7 +74,7 @@ leaveComment owner' repo pr accessToken endpoint basePath checklist = try $ do
                         return Nothing
         else do
             let leave = case checklistComment of
-                    Nothing -> createComment auth owner repo pr
+                    Nothing -> createComment auth owner repo issueId'
                     Just IssueComment { issueCommentId = cid } ->
                         editComment auth owner repo $ Id cid
             Comment { commentHtmlUrl = leftCommentUrl } <-
@@ -79,6 +82,8 @@ leaveComment owner' repo pr accessToken endpoint basePath checklist = try $ do
                     >>= error'
             return leftCommentUrl
   where
+    issueId' :: Id Issue
+    issueId' = Id $ untagId prId
     auth :: Auth
     auth = case endpoint of
         Nothing -> OAuth accessToken
@@ -92,6 +97,26 @@ leaveComment owner' repo pr accessToken endpoint basePath checklist = try $ do
                                    SimpleUser { simpleUserId = authorId }
                              } =
         uid == authorId && isPrefixOf signature cBody
-    error' :: Either Error a -> IO a
-    error' (Right v) = return v
-    error' (Left e) = throwIO e
+
+pullRequestBaseSha :: Maybe OwnerName
+                   -> RepoName
+                   -> PullRequestId
+                   -> Token
+                   -> Maybe Text
+                   -> IO (Either Error Text)
+pullRequestBaseSha owner' repo prId accessToken endpoint = try $ do
+    user <- userInfoCurrent' auth >>= error'
+    let owner = fromMaybe (N . untagName $ userLogin user) owner'
+    PullRequest
+        { pullRequestBase = PullRequestCommit { pullRequestCommitSha = sha }
+        } <- pullRequest owner repo prId >>= error'
+    return sha
+  where
+    auth :: Auth
+    auth = case endpoint of
+        Nothing -> OAuth accessToken
+        Just e -> EnterpriseOAuth e accessToken
+
+error' :: Either Error a -> IO a
+error' (Right v) = return v
+error' (Left e) = throwIO e

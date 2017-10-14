@@ -12,37 +12,61 @@ import Data.Text.Encoding
 import Data.Text.IO as TIO
 import Options.Applicative
 import System.Directory
+import System.Process hiding (cwd)
 
 import Checkmate.Check
 import Checkmate.Discover
 import Checkmate.Publisher.GitHub
 import Checkmate.Renderer
 
-type Command = App -> Checklist -> IO ()
+type InputReader = App -> IO Text
+type CommandRunner = App -> Checklist -> IO ()
+
+data Command = Command
+    { inputReader :: InputReader
+    , commandRunner :: CommandRunner
+    }
 
 data App = App
-    { inputFilePath :: FilePath
+    { inputFilePath :: Maybe FilePath
     , appCommand :: Command
     }
 
 withInputFile :: App -> (Handle -> IO r) -> IO r
-withInputFile App { inputFilePath = "-" } action' = do
+withInputFile App { inputFilePath = Nothing } action' = do
     let i = stdin
     r <- action' i
     hClose i
     return r
-withInputFile App { inputFilePath = i } action' =
+withInputFile app@App { inputFilePath = Just "-" } action' =
+    withInputFile (app { inputFilePath = Nothing }) action'
+withInputFile App { inputFilePath = Just i } action' =
     withFile i ReadMode action'
+
+readInputFile :: App -> IO Text
+readInputFile = (`withInputFile` TIO.hGetContents)
+
+readDiff :: App -> IO (Either String FileDeltas)
+readDiff app@App{ appCommand = Command { inputReader = readInput } } =
+    parseDiff <$> readInput app
+
+listChecks :: App -> IO Checklist
+listChecks app = do
+    d <- readDiff app
+    cwd <- getCurrentDirectory
+    case d of
+        Left msg -> die msg
+        Right deltas -> discover cwd deltas
 
 appP :: Parser App
 appP = App
-    <$> strOption (  long "input-file"
-                  <> short 'i'
-                  <> metavar "FILE"
-                  <> showDefault
-                  <> value "-"
-                  <> help "A diff text to extract a checklist from"
-                  )
+    <$> option (Just <$> str)
+        (  long "input-file"
+        <> short 'i'
+        <> metavar "FILE"
+        <> value Nothing
+        <> help "A diff text to extract a checklist from"
+        )
     <*> subparser (  command "commonmark" commonmarkPI
                   <> command "gfm" gfmPI
                   <> command "github" githubPI
@@ -50,19 +74,19 @@ appP = App
                   )
 
 commonmarkPI :: ParserInfo Command
-commonmarkPI = info (pure cmd) $
+commonmarkPI = info (pure $ Command readInputFile cmd) $
     progDesc "Print a checklist as CommonMark (i.e. Markdown) format."
   where
-    cmd :: Command
+    cmd :: CommandRunner
     cmd _ checklist = do
         cwd <- getCurrentDirectory
         TIO.putStr $ toCommonMark cwd 1 checklist
 
 gfmPI :: ParserInfo Command
-gfmPI = info (pure cmd) $
+gfmPI = info (pure $ Command readInputFile cmd) $
     progDesc "Print a checklist as GitHub Flavored Markdown format."
   where
-    cmd :: Command
+    cmd :: CommandRunner
     cmd _ checklist = do
         cwd <- getCurrentDirectory
         TIO.putStr $ toGFMarkdown cwd 1 checklist
@@ -78,20 +102,23 @@ githubTokenOption = option (encodeUtf8 . pack <$> str)
 
 leaveGithubComment :: Maybe OwnerName
                    -> RepoName
-                   -> IssueId
+                   -> PullRequestId
                    -> Token
                    -> Maybe Text
-                   -> Command
+                   -> CommandRunner
 leaveGithubComment owner' repo pr accessToken endpoint _ checklist = do
     cwd <- getCurrentDirectory
     r <- leaveComment owner' repo pr accessToken endpoint cwd checklist
     case r of
         Right Nothing -> return ()
         Right (Just (URL url)) -> TIO.putStrLn url
-        Left (HTTPError httpError) -> printError $ pack $ show httpError
-        Left (ParseError message) -> printError message
-        Left (JsonError message) -> printError message
-        Left (UserError message) -> printError message
+        Left e -> handleGithubError e
+
+handleGithubError :: Checkmate.Publisher.GitHub.Error -> IO ()
+handleGithubError (HTTPError httpError) = printError $ pack $ show httpError
+handleGithubError (ParseError message) = printError message
+handleGithubError (JsonError message) = printError message
+handleGithubError (UserError message) = printError message
 
 githubPI :: ParserInfo Command
 githubPI = info (parser <**> helper) $
@@ -99,7 +126,7 @@ githubPI = info (parser <**> helper) $
                "reuqest on GitHub."
   where
     parser :: Parser Command
-    parser = leaveGithubComment
+    parser = cmd
         <$> option (Just . mkOwnerName . pack <$> str)
             (  long "owner"
             <> long "login"
@@ -119,7 +146,7 @@ githubPI = info (parser <**> helper) $
             <> help ("Name of GitHub repository of a pull request to create " ++
                      "a checklist comment.  \"bar\" of \"github.com/foo/bar\"")
             )
-        <*> option (mkIssueId <$> (auto :: ReadM Int))
+        <*> option (mkPullRequestId <$> (auto :: ReadM Int))
             (  long "pull-request"
             <> long "pr"
             <> short 'p'
@@ -134,6 +161,11 @@ githubPI = info (parser <**> helper) $
             <> value Nothing
             <> help "API endpoint URL for GitHub Enterprise (if applicable)"
             )
+    cmd :: Maybe OwnerName -> RepoName -> PullRequestId -> Token -> Maybe Text
+        -> Command
+    cmd owner repo prId token endpoint =
+        Command readInputFile
+                (leaveGithubComment owner repo prId token endpoint)
 
 githubTravisPI :: ParserInfo Command
 githubTravisPI = info (parser <**> helper) $
@@ -145,22 +177,33 @@ githubTravisPI = info (parser <**> helper) $
     parser :: Parser Command
     parser = cmd <$> githubTokenOption
     cmd :: Token -> Command
-    cmd accessToken app checklist = do
-        pr <- environ "TRAVIS_PULL_REQUEST"
-        when (pr == "false") $ printError "This is not a PR build; skipped..."
-        let prNo = mkIssueId $ read pr
-        slug <- pack <$> environ "TRAVIS_REPO_SLUG"
-        let (o, r) = Data.Text.break (== '/') slug
-            owner = mkOwnerName o
-            repo = mkRepoName $ Data.Text.drop 1 r
+    cmd token = Command readInput $ run token
+    readInput :: App -> IO Text
+    readInput _ = do
+        range <- environ "TRAVIS_COMMIT_RANGE"
+        diff <- readProcess "git" ["diff", range] ""
+        return $ pack diff
+    run :: Token -> CommandRunner
+    run accessToken app checklist = do
+        (owner, repo, prId) <- identifier
         leaveGithubComment
             (Just owner)
             repo
-            prNo
+            prId
             accessToken
             Nothing
             app
             checklist
+    identifier :: IO (OwnerName, RepoName, PullRequestId)
+    identifier = do
+        pr <- environ "TRAVIS_PULL_REQUEST"
+        when (pr == "false") $ printError "This is not a PR build; skipped..."
+        let prId = mkPullRequestId $ read pr
+        slug <- pack <$> environ "TRAVIS_REPO_SLUG"
+        let (o, r) = Data.Text.break (== '/') slug
+            owner = mkOwnerName o
+            repo = mkRepoName $ Data.Text.drop 1 r
+        return (owner, repo, prId)
     environ :: String -> IO String
     environ name = do
         r <- lookupEnv name
@@ -181,11 +224,6 @@ printError message = do
 
 main :: IO ()
 main = do
-    app@App { appCommand = cmd' } <- execParser appPI
-    cwd <- getCurrentDirectory
-    diff <- withInputFile app TIO.hGetContents
-    case parseDiff diff of
-        Left msg -> System.IO.putStrLn msg
-        Right deltas -> do
-            checklist <- discover cwd deltas
-            cmd' app checklist
+    app@App { appCommand = Command { commandRunner = cmd } } <- execParser appPI
+    checklist <- listChecks app
+    cmd app checklist

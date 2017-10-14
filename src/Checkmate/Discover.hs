@@ -1,5 +1,6 @@
 module Checkmate.Discover
-    ( discover
+    ( FileDeltas
+    , discover
     , discoverDirectory
     , discoverFile
     , parseDiff
