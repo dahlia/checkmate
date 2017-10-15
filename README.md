@@ -161,3 +161,22 @@ test:
   post:
   - ~/bin/checkmate github-circle --token "$GITHUB_TOKEN"
 ~~~~~~~~
+
+
+### Other CI softwares/services
+
+You can run `checkmate github` command with explicit arguments:
+
+~~~~~~~~ bash
+curl -L -o ~/bin/checkmate "$CHECKMATE_DOWNLOAD_URL"
+chmod +x ~/bin/checkmate
+# Suppose we're running a build of github.com/foo/bar/pull/123
+~/bin/checkmate github \
+    --token "$GITHUB_TOKEN" \
+    --login foo \
+    --repo bar \
+    --pr 123
+~~~~~~~~
+
+If you're using GitHub Enterprise on premise use `--endpoint` option.
+Further reading: `checkmate github --help`.
