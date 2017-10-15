@@ -12,8 +12,9 @@ To be released.
     nothing to `CHECK` corresponding to the given diff.  It also removes
     the existing comment previously left by Checkmate on the same pull request.
 
- -  Added `checkmate github-travis` command, a shortcut command of
-    `checkmate github` for Travis CI integration.
+ -  Added `checkmate github-travis` and `checkmate github-circle` commands,
+    shortcuts of `checkmate github` for Travis CI and Circle CI integration.
+    It even doesn't need the result of `git diff`.
 
  -  `checkmate` and its subcommands became to terminate with a proper non-zero
     exit code and print messages to /dev/stderr instead of /dev/stdout when

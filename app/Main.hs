@@ -1,5 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 import Control.Monad
+import Data.List (elemIndices)
+import Data.List.NonEmpty (nonEmpty, last)
 import Data.Maybe
 import Data.Semigroup ((<>))
 import Prelude hiding (error)
@@ -70,6 +72,7 @@ appP = App
     <*> subparser (  command "commonmark" commonmarkPI
                   <> command "gfm" gfmPI
                   <> command "github" githubPI
+                  <> command "github-circle" githubCirclePI
                   <> command "github-travis" githubTravisPI
                   )
 
@@ -114,7 +117,7 @@ leaveGithubComment owner' repo pr accessToken endpoint _ checklist = do
         Right (Just (URL url)) -> TIO.putStrLn url
         Left e -> handleGithubError e
 
-handleGithubError :: Checkmate.Publisher.GitHub.Error -> IO ()
+handleGithubError :: Checkmate.Publisher.GitHub.Error -> IO a
 handleGithubError (HTTPError httpError) = printError $ pack $ show httpError
 handleGithubError (ParseError message) = printError message
 handleGithubError (JsonError message) = printError message
@@ -167,18 +170,63 @@ githubPI = info (parser <**> helper) $
         Command readInputFile
                 (leaveGithubComment owner repo prId token endpoint)
 
+githubCirclePI :: ParserInfo Command
+githubCirclePI = info (parser <**> helper) $
+    progDesc $ "Create a checklist comment on the corresponding pull " ++
+               "reuqest on GitHub from Circle CI. It depends on the " ++
+               "following environment variables: CI_PULL_REQUEST, " ++
+               "CIRCLE_PROJECT_REPONAME, CIRCLE_PROJECT_USERNAME, CIRCLE_SHA1"
+  where
+    parser :: Parser Command
+    parser = fmap cmd githubTokenOption
+    cmd :: Token -> Command
+    cmd token = Command (readInput token) (run token)
+    readInput :: Token -> InputReader
+    readInput accessToken _ = do
+        (owner, repo, prId) <- identifier
+        result <- pullRequestBaseSha owner repo prId accessToken Nothing
+        base <- case result of
+            Left e -> handleGithubError e
+            Right sha -> return sha
+        head' <- environ "CIRCLE_SHA1"
+        let range = unpack base ++ ".." ++ head'
+        diff <- readProcess "git" ["diff", range] ""
+        return $ pack diff
+    run :: Token -> CommandRunner
+    run accessToken app checklist = do
+        (owner, repo, prId) <- identifier
+        leaveGithubComment owner repo prId accessToken Nothing app checklist
+    identifier :: IO (Maybe OwnerName, RepoName, PullRequestId)
+    identifier = do
+        pr <- environ "CI_PULL_REQUEST"
+        case nonEmpty $ elemIndices '/' pr of
+            Nothing -> do
+                System.IO.hPutStrLn stderr "This is not a PR build; skipped..."
+                exitSuccess  -- It shouldn't be marked as failure on CI builds
+            Just slashes -> do
+                let lastPart = Prelude.drop
+                        (succ $ Data.List.NonEmpty.last slashes)
+                        pr
+                    prId = mkPullRequestId $ read lastPart
+                owner <- environ "CIRCLE_PROJECT_USERNAME"
+                repo <- environ "CIRCLE_PROJECT_REPONAME"
+                return ( Just $ mkOwnerName $ pack owner
+                       , mkRepoName $ pack repo
+                       , prId
+                       )
+
 githubTravisPI :: ParserInfo Command
 githubTravisPI = info (parser <**> helper) $
     progDesc $ "Create a checklist comment on the corresponding pull " ++
                "reuqest on GitHub from Travis CI. It depends on the " ++
-               "following environment variables: TRAVIS_REPO_SLUG, " ++
-               "TRAVIS_PULL_REQUEST."
+               "following environment variables: TRAVIS_COMMIT_RANGE, " ++
+               "TRAVIS_PULL_REQUEST, TRAVIS_REPO_SLUG."
   where
     parser :: Parser Command
     parser = cmd <$> githubTokenOption
     cmd :: Token -> Command
     cmd token = Command readInput $ run token
-    readInput :: App -> IO Text
+    readInput :: InputReader
     readInput _ = do
         range <- environ "TRAVIS_COMMIT_RANGE"
         diff <- readProcess "git" ["diff", range] ""
@@ -208,18 +256,19 @@ githubTravisPI = info (parser <**> helper) $
                     owner = mkOwnerName o
                     repo = mkRepoName $ Data.Text.drop 1 r
                 return (owner, repo, prId)
-    environ :: String -> IO String
-    environ name = do
-        r <- lookupEnv name
-        case r of
-            Nothing -> printError $ pack name `append` " is not defined."
-            Just v -> return v
 
 appPI :: ParserInfo App
 appPI = info (appP <**> helper)
     (  fullDesc
     <> progDesc "Generate checklists relevant to a given patch."
     )
+
+environ :: String -> IO String
+environ name = do
+    r <- lookupEnv name
+    case r of
+        Nothing -> printError $ pack name `append` " is not defined."
+        Just v -> return v
 
 printError :: Text -> IO a
 printError message = do

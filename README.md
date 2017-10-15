@@ -153,29 +153,11 @@ script:
 ### Circle CI
 
 ~~~~~~~~ yaml
-machine:
-  environment:
-    # As Circle CI doesn't provide any environment variable of PR's target
-    # branch it needs to be hardcoded.
-    # See also https://discuss.circleci.com/t/access-real-branch-name-for-pull-request-fork-build/907
-    TARGET_BRANCH: master
 dependencies:
   post:
-  - |
-    if [[ "$CI_PULL_REQUEST" ]]
-    then
-      curl -L -o ~/bin/checkmate "$CHECKMATE_DOWNLOAD_URL"
-      chmod +x ~/bin/checkmate
-    fi
+  - curl -L -o ~/bin/checkmate "$CHECKMATE_DOWNLOAD_URL"
+  - chmod +x ~/bin/checkmate
 test:
   post:
-  - |
-    if [[ "$CI_PULL_REQUEST" ]]
-    then
-      git diff "$TARGET_BRANCH..$CIRCLE_SHA1" | ~/bin/checkmate github \
-        --token "$GITHUB_TOKEN" \
-        --login "$CIRCLE_PROJECT_USERNAME" \
-        --repo "$CIRCLE_PROJECT_REPONAME" \
-        --pr "${CI_PULL_REQUEST##*/}"
-    fi
+  - ~/bin/checkmate github-circle --token "$GITHUB_TOKEN"
 ~~~~~~~~
