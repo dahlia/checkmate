@@ -197,13 +197,17 @@ githubTravisPI = info (parser <**> helper) $
     identifier :: IO (OwnerName, RepoName, PullRequestId)
     identifier = do
         pr <- environ "TRAVIS_PULL_REQUEST"
-        when (pr == "false") $ printError "This is not a PR build; skipped..."
-        let prId = mkPullRequestId $ read pr
-        slug <- pack <$> environ "TRAVIS_REPO_SLUG"
-        let (o, r) = Data.Text.break (== '/') slug
-            owner = mkOwnerName o
-            repo = mkRepoName $ Data.Text.drop 1 r
-        return (owner, repo, prId)
+        case pr of
+            "false" -> do
+                System.IO.hPutStrLn stderr "This is not a PR build; skipped..."
+                exitSuccess  -- It shouldn't be marked as failure on CI builds
+            _ -> do
+                let prId = mkPullRequestId $ read pr
+                slug <- pack <$> environ "TRAVIS_REPO_SLUG"
+                let (o, r) = Data.Text.break (== '/') slug
+                    owner = mkOwnerName o
+                    repo = mkRepoName $ Data.Text.drop 1 r
+                return (owner, repo, prId)
     environ :: String -> IO String
     environ name = do
         r <- lookupEnv name
