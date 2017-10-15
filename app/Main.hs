@@ -117,6 +117,26 @@ leaveGithubComment owner' repo pr accessToken endpoint _ checklist = do
         Right (Just (URL url)) -> TIO.putStrLn url
         Left e -> handleGithubError e
 
+githubInputReader :: IO (Maybe OwnerName, RepoName, PullRequestId)
+                  -> String
+                  -> Token -> InputReader
+githubInputReader identifier headEnvironKey accessToken _ = do
+    (owner, repo, prId) <- identifier
+    result <- pullRequestBaseSha owner repo prId accessToken Nothing
+    base <- case result of
+        Left e -> handleGithubError e
+        Right sha -> return sha
+    head' <- environ headEnvironKey
+    let range = unpack base ++ ".." ++ head'
+    diff <- readProcess "git" ["diff", range] ""
+    return $ pack diff
+
+githubCommandRunner :: IO (Maybe OwnerName, RepoName, PullRequestId)
+                    -> Token -> CommandRunner
+githubCommandRunner identifier accessToken app checklist = do
+    (owner, repo, prId) <- identifier
+    leaveGithubComment owner repo prId accessToken Nothing app checklist
+
 handleGithubError :: Checkmate.Publisher.GitHub.Error -> IO a
 handleGithubError (HTTPError httpError) = printError $ pack $ show httpError
 handleGithubError (ParseError message) = printError message
@@ -180,22 +200,8 @@ githubCirclePI = info (parser <**> helper) $
     parser :: Parser Command
     parser = fmap cmd githubTokenOption
     cmd :: Token -> Command
-    cmd token = Command (readInput token) (run token)
-    readInput :: Token -> InputReader
-    readInput accessToken _ = do
-        (owner, repo, prId) <- identifier
-        result <- pullRequestBaseSha owner repo prId accessToken Nothing
-        base <- case result of
-            Left e -> handleGithubError e
-            Right sha -> return sha
-        head' <- environ "CIRCLE_SHA1"
-        let range = unpack base ++ ".." ++ head'
-        diff <- readProcess "git" ["diff", range] ""
-        return $ pack diff
-    run :: Token -> CommandRunner
-    run accessToken app checklist = do
-        (owner, repo, prId) <- identifier
-        leaveGithubComment owner repo prId accessToken Nothing app checklist
+    cmd token = Command (githubInputReader identifier "CIRCLE_SHA1" token)
+                        (githubCommandRunner identifier token)
     identifier :: IO (Maybe OwnerName, RepoName, PullRequestId)
     identifier = do
         pr <- environ "CI_PULL_REQUEST"
@@ -219,30 +225,16 @@ githubTravisPI :: ParserInfo Command
 githubTravisPI = info (parser <**> helper) $
     progDesc $ "Create a checklist comment on the corresponding pull " ++
                "reuqest on GitHub from Travis CI. It depends on the " ++
-               "following environment variables: TRAVIS_COMMIT_RANGE, " ++
-               "TRAVIS_PULL_REQUEST, TRAVIS_REPO_SLUG."
+               "following environment variables: TRAVIS_PULL_REQUEST, " ++
+               "TRAVIS_PULL_REQUEST_SHA, TRAVIS_REPO_SLUG."
   where
     parser :: Parser Command
     parser = cmd <$> githubTokenOption
     cmd :: Token -> Command
-    cmd token = Command readInput $ run token
-    readInput :: InputReader
-    readInput _ = do
-        range <- environ "TRAVIS_COMMIT_RANGE"
-        diff <- readProcess "git" ["diff", range] ""
-        return $ pack diff
-    run :: Token -> CommandRunner
-    run accessToken app checklist = do
-        (owner, repo, prId) <- identifier
-        leaveGithubComment
-            (Just owner)
-            repo
-            prId
-            accessToken
-            Nothing
-            app
-            checklist
-    identifier :: IO (OwnerName, RepoName, PullRequestId)
+    cmd token = Command
+        (githubInputReader identifier "TRAVIS_PULL_REQUEST_SHA" token)
+        (githubCommandRunner identifier token)
+    identifier :: IO (Maybe OwnerName, RepoName, PullRequestId)
     identifier = do
         pr <- environ "TRAVIS_PULL_REQUEST"
         case pr of
@@ -255,7 +247,7 @@ githubTravisPI = info (parser <**> helper) $
                 let (o, r) = Data.Text.break (== '/') slug
                     owner = mkOwnerName o
                     repo = mkRepoName $ Data.Text.drop 1 r
-                return (owner, repo, prId)
+                return (Just owner, repo, prId)
 
 appPI :: ParserInfo App
 appPI = info (appP <**> helper)
