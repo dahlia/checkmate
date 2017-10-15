@@ -143,12 +143,8 @@ All examples assume the environment variables are defined:
 
 ~~~~~~~~ yaml
 install:
-- |
-  if [[ "$TRAVIS_PULL_REQUEST" != "false" ]]
-  then
-    curl -L -o ~/bin/checkmate "$CHECKMATE_DOWNLOAD_URL"
-    chmod +x ~/bin/checkmate
-  fi
+- curl -L -o ~/bin/checkmate "$CHECKMATE_DOWNLOAD_URL"
+- chmod +x ~/bin/checkmate
 script:
 - ~/bin/checkmate github-travis --token "$GITHUB_TOKEN"
 ~~~~~~~~
