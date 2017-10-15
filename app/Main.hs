@@ -120,7 +120,7 @@ leaveGithubComment owner' repo pr accessToken endpoint _ checklist = do
 githubInputReader :: IO (Maybe OwnerName, RepoName, PullRequestId)
                   -> String
                   -> Token -> InputReader
-githubInputReader identifier headEnvironKey accessToken _ = do
+githubInputReader identifier headEnvironKey accessToken (App Nothing _) = do
     (owner, repo, prId) <- identifier
     result <- pullRequestBaseSha owner repo prId accessToken Nothing
     base <- case result of
@@ -130,6 +130,7 @@ githubInputReader identifier headEnvironKey accessToken _ = do
     let range = unpack base ++ ".." ++ head'
     diff <- readProcess "git" ["diff", range] ""
     return $ pack diff
+githubInputReader _ _ _ app = readInputFile app
 
 githubCommandRunner :: IO (Maybe OwnerName, RepoName, PullRequestId)
                     -> Token -> CommandRunner
