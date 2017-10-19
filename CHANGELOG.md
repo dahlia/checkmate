@@ -8,6 +8,9 @@ To be released.
 
 ### Frontend
 
+ -  Added a new filename *.check* besides *CHECK* as directory-level checklist
+    file.
+
  -  `checkmate github` command became to leave no comment when there are
     nothing to `CHECK` corresponding to the given diff.  It also removes
     the existing comment previously left by Checkmate on the same pull request.

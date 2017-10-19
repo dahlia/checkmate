@@ -20,8 +20,13 @@ import Checkmate.Diff
 import Checkmate.Parser.CheckFile
 import Checkmate.Parser.IndentBlock
 
-checkFileName :: FilePath
-checkFileName = "CHECK"
+checkFileNames :: Set FilePath
+checkFileNames = fromList
+    -- CHECK: All checklist filenames that Checkmate recognize should be
+    -- written in the project docs (i.e. README.md).
+    [ "CHECK"
+    , ".check"
+    ]
 
 discover :: FilePath -> FileDeltas -> IO Checklist
 discover baseDirPath deltas = do
@@ -32,28 +37,30 @@ discover baseDirPath deltas = do
     return . unions $ checklists ++ dirChecklists
 
 discoverDirectory :: FilePath -> FilePath -> IO Checklist
-discoverDirectory baseDirPath dirPath = do
-    dirExist <- doesDirectoryExist dirPath'
-    if not dirExist then return S.empty else do
-        checkFileExist <- doesFileExist checkFilePath
-        checklist <-
-            if checkFileExist
-            then do
-                result <- parseCheckFile checkFilePath
-                return $ case result of
-                    Left _ -> S.empty
-                    Right checklist -> checklist
-            else return S.empty
-        parentChecklist <-
-            if dirPath == "." || dirPath == "" || parent == dirPath
-            then return S.empty
-            else discoverDirectory baseDirPath parent
-        return $ S.union checklist parentChecklist
+discoverDirectory baseDirPath dirPath = fmap unions $ forM checkFileNames' $
+    \ checkFileName -> do
+        let checkFilePath = dirPath' </> checkFileName
+        dirExist <- doesDirectoryExist dirPath'
+        if not dirExist then return S.empty else do
+            checkFileExist <- doesFileExist checkFilePath
+            checklist <-
+                if checkFileExist
+                then do
+                    result <- parseCheckFile checkFilePath
+                    return $ case result of
+                        Left _ -> S.empty
+                        Right checklist -> checklist
+                else return S.empty
+            parentChecklist <-
+                if dirPath == "." || dirPath == "" || parent == dirPath
+                then return S.empty
+                else discoverDirectory baseDirPath parent
+            return $ S.union checklist parentChecklist
   where
+    checkFileNames' :: [FilePath]
+    checkFileNames' = toList checkFileNames
     dirPath' :: FilePath
     dirPath' = baseDirPath </> dirPath
-    checkFilePath :: FilePath
-    checkFilePath = dirPath' </> checkFileName
     parent :: FilePath
     parent = takeDirectory dirPath
 

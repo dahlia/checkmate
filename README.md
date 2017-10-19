@@ -97,6 +97,29 @@ indentation.  Even if a block is wrapped in curly braces without indentation,
 it isn't counted as a block.
 
 
+Directory-level checklist
+-------------------------
+
+Some checks may need to be listed for a whole directory.  Checkmate recognizes
+files named *.check* or *CHECK* in a directory and include checks in that to
+the checklist if any file in the directory are changed.  Its syntax is basically
+a simple bullet list and a bullet can be `*`/`-`/`+`/`CHECK` or digits followed
+by `.`/`)`, e.g.:
+
+    - Check 1
+    - Check 2
+
+    + A plus sign too can be a bullet.
+    * An asterisk too.
+
+    1. Numbered-bullets also can be used.
+    2) A closing parenthesis as well can follow instead of a period.
+
+    CHECK: For consistency `CHECK` keyword also can be a bullet as well.
+    CHECK And a colon can be omitted.
+    Lines without any bullet is continued from previous line(s).
+
+
 Download
 --------
 
