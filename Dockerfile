@@ -3,7 +3,7 @@
 # statically linked.
 FROM alpine:3.6
 
-RUN apk add --no-cache bash build-base curl ghc zlib-dev
+RUN apk add --no-cache bash build-base curl ghc git zlib-dev
 RUN curl -sSL https://get.haskellstack.org/ | bash
 
 RUN stack config set system-ghc --global true

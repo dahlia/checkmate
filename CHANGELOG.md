@@ -4,7 +4,7 @@ Checkmate changelog
 Version 0.3.0
 -------------
 
-To be released.
+Released on October 21, 2017.
 
 ### Frontend
 
