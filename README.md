@@ -12,6 +12,11 @@ touches some code scopes having any `CHECK` comments, and lists the checks.
 It helps contributors and reviewers to remind matters that require attention
 when a part of the code is changed.
 
+[ci-badge]: https://travis-ci.org/spoqa/checkmate.svg?branch=master
+[ci]: https://travis-ci.org/spoqa/checkmate
+[hackage-badge]: https://img.shields.io/hackage/v/checkmate.svg
+[hackage]: https://hackage.haskell.org/package/checkmate
+
 
 Situation
 ---------
@@ -38,11 +43,6 @@ Contributors and reviewers altogether are easy to forget about such tasks.
 
 To remind peers of such tasks, Checkmate detects `CHECK` comments like the above
 example when a relevant *code block* is touched and show peers a checklist.
-
-[ci-badge]: https://travis-ci.org/spoqa/checkmate.svg?branch=master
-[ci]: https://travis-ci.org/spoqa/checkmate
-[hackage-badge]: https://img.shields.io/hackage/v/checkmate.svg
-[hackage]: https://hackage.haskell.org/package/checkmate
 
 
 Listing relevant checks: overlapped blocks
