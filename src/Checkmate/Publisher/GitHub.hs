@@ -33,7 +33,7 @@ import GitHub.Endpoints.Issues.Comments
     , deleteComment
     , editComment
     )
-import GitHub.Endpoints.PullRequests (pullRequest)
+import GitHub.Endpoints.PullRequests (pullRequest')
 import GitHub.Endpoints.Users (userInfoCurrent')
 
 import Checkmate.Check (Checklist)
@@ -109,7 +109,7 @@ pullRequestBaseSha owner' repo prId accessToken endpoint = try $ do
     let owner = fromMaybe (N . untagName $ userLogin user) owner'
     PullRequest
         { pullRequestBase = PullRequestCommit { pullRequestCommitSha = sha }
-        } <- pullRequest owner repo prId >>= error'
+        } <- pullRequest' (Just auth) owner repo prId >>= error'
     return sha
   where
     auth :: Auth

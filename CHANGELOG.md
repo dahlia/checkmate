@@ -6,6 +6,10 @@ Version 0.3.1
 
 To be released.
 
+ -  Fixed a bug that `checkmate github-travis` and `checkmate github-circle`
+    commands were prone to reach rate limit of GitHub API due to unauthenticated
+    request for getting metadata of the pull request.
+
 
 Version 0.3.0
 -------------
