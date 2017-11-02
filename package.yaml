@@ -1,5 +1,5 @@
 name: checkmate
-version: '0.3.0'
+version: '0.3.1'
 synopsis: Generate checklists relevant to a given patch
 category: Development
 author: Hong Minhee
