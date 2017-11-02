@@ -4,7 +4,7 @@ Checkmate changelog
 Version 0.3.1
 -------------
 
-To be released.
+Released on November 3, 2017.
 
  -  Fixed a bug that `checkmate github-travis` and `checkmate github-circle`
     commands were prone to reach rate limit of GitHub API due to unauthenticated
