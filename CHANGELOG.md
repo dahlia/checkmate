@@ -4,7 +4,7 @@ Checkmate changelog
 Version 0.3.2
 -------------
 
-To be released.
+Released on November 4, 2017.
 
  -  Relicensed from GPLv3+ to [AGPLv3][]+ since [diff-parse][] library that
     Checkmate depends on has been licensed under AGPLv3.

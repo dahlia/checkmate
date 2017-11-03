@@ -156,7 +156,7 @@ All examples assume the environment variables are defined:
     of the latest release, i.e.:
 
     ~~~~~~~ bash
-    CHECKMATE_DOWNLOAD_URL=https://github.com/spoqa/checkmate/releases/download/0.3.1/checkmate-linux-x86_64
+    CHECKMATE_DOWNLOAD_URL=https://github.com/spoqa/checkmate/releases/download/0.3.2/checkmate-linux-x86_64
     ~~~~~~~
 
 [personal API tokens]: https://github.com/blog/1509-personal-api-tokens
