@@ -1,6 +1,23 @@
 Checkmate changelog
 ===================
 
+Version 0.3.2
+-------------
+
+To be released.
+
+ -  Relicensed from GPLv3+ to [AGPLv3][]+ since [diff-parse][] library that
+    Checkmate depends on has been licensed under AGPLv3.
+
+ -  Fixed a bug that the diff parser had failed with a result of `endOfInput`
+    when the input diff contains file renames.  It was a bug of [diff-parse][]
+    library, and a [patch](https://github.com/mulby/diff-parse/pull/10) was
+    needed to fix this.
+
+[AGPLv3]: https://www.gnu.org/licenses/agpl-3.0.html
+[diff-parse]: https://github.com/mulby/diff-parse
+
+
 Version 0.3.1
 -------------
 

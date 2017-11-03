@@ -5,7 +5,10 @@ packages:
     git: git://github.com/dahlia/github.git
     commit: d50776cfd72ec533a2c5667b755eba06de3c075f
   extra-dep: true
-extra-deps:
-- diff-parse-0.2.1
+- location:
+    git: git://github.com/dahlia/diff-parse.git
+    commit: cb86ec86d0e62af43a34dbe81482627a4e911957
+  extra-dep: true
+extra-deps: []
 flags: {}
 extra-package-dbs: []

@@ -1,11 +1,11 @@
 name: checkmate
-version: '0.3.1'
+version: '0.3.2'
 synopsis: Generate checklists relevant to a given patch
 category: Development
 author: Hong Minhee
 maintainer: hong.minhee@gmail.com
 copyright: (c) 2017 Hong Minhee
-license: GPL-3
+license: AGPL-3
 github: spoqa/checkmate
 stability: alpha
 extra-source-files:
