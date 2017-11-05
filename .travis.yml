@@ -47,9 +47,9 @@ after_deploy:
   mv bin/linux/amd64/github-release ~/bin/
   chmod +x ~/bin/github-release
   popd
-- curl -L -o ~/bin/submark https://github.com/dahlia/submark/releases/download/0.1.0/submark-linux-x86_64
+- curl -L -o ~/bin/submark https://github.com/dahlia/submark/releases/download/0.2.0/submark-linux-x86_64
 - chmod +x ~/bin/submark
-- submark -o /tmp/release-note --h2 "Version $TRAVIS_TAG" -O CHANGELOG.md
+- submark -o /tmp/release-note -i --h2 "Version $TRAVIS_TAG" -O CHANGELOG.md
 - cat /tmp/release-note
 - |
   GITHUB_TOKEN="$GITHUB_ACCESS_TOKEN" \
