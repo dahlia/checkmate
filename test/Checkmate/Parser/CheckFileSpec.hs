@@ -11,7 +11,7 @@ import Data.Text.IO
 import Test.Hspec
 import Test.Hspec.Megaparsec
 import Text.InterpolatedString.Perl6
-import Text.Megaparsec
+import Text.Megaparsec hiding (ParseError)
 import System.FilePath
 import System.IO.Temp
 
@@ -32,9 +32,7 @@ spec = do
             return (takeDirectory filePath, result)
 
 parserSpec :: String
-           -> ( Text -> IO ( FilePath
-                           , Either (ParseError (Token Text) Dec) Checklist
-                           )
+           -> ( Text -> IO (FilePath, Either ParseError Checklist)
               )
            -> Spec
 parserSpec specName parseFn =
@@ -98,9 +96,7 @@ parserSpec specName parseFn =
                 , Check dir 7 "d"
                 ]
   where
-    parse' :: Text -> IO ( Scope
-                         , Either (ParseError (Token Text) Dec) Checklist
-                         )
+    parse' :: Text -> IO (Scope, Either ParseError Checklist)
     parse' text = do
         (dir, result) <- parseFn text
         return (Directory dir, result)

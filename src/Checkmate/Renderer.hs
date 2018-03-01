@@ -7,7 +7,7 @@ module Checkmate.Renderer
 import Data.List
 
 import Data.Set
-import Data.Text hiding (groupBy, isSuffixOf, zip)
+import Data.Text hiding (groupBy, zip)
 import System.FilePath
 
 import Checkmate.Check

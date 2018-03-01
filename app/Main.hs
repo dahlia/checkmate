@@ -1,10 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
-import Control.Monad
 import Data.List (elemIndices)
 import Data.List.NonEmpty (nonEmpty, last)
-import Data.Maybe
 import Data.Semigroup ((<>))
-import Prelude hiding (error)
 import System.Environment
 import System.Exit
 import System.IO

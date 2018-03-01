@@ -1,30 +1,34 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Checkmate.Parser.IndentBlock
-    ( parser
+    ( ParseError
+    , parser
     , parseSourceCode
     , parseSourceFile
     ) where
 
 import Control.Monad
 import Data.List
+import Data.Void
 
 import Data.Range.Range
 import Data.Set
 import Data.Text
 import Data.Text.IO
-import Text.Megaparsec
-import Text.Megaparsec.Text
+import Text.Megaparsec hiding (ParseError)
+import Text.Megaparsec.Char
+import qualified Text.Megaparsec.Error as E
 
 import Checkmate.Check
 
-parseSourceFile :: FilePath
-                -> IO (Either (ParseError (Token Text) Dec) Checklist)
+type Parser = Parsec Void Text
+type ParseError = E.ParseError Char Void
+
+parseSourceFile :: FilePath -> IO (Either ParseError Checklist)
 parseSourceFile filePath = do
     input <- Data.Text.IO.readFile filePath
     return $ parseSourceCode filePath input
 
-parseSourceCode :: FilePath
-                -> Text
-                -> Either (ParseError (Token Text) Dec) Checklist
+parseSourceCode :: FilePath -> Text -> Either ParseError Checklist
 parseSourceCode = parse parser 
 
 data Line = CheckComment Text | Line | EmptyLine deriving (Eq, Ord, Show)
@@ -50,33 +54,33 @@ parser = do
         , char ' ' >> return 1
         ]
     someSpaces :: Parser ()
-    someSpaces = skipMany $ oneOf " \t"
+    someSpaces = skipMany $ oneOf [' ', '\t']
     checkKeyword :: Parser ()
     checkKeyword = void $ string "CHECK"
     checkThenSpaces :: Parser ()
     checkThenSpaces = do
         checkKeyword
-        (char ':' >> someSpaces) <|> skipSome (oneOf " \t")
-    lineCommentStart :: Parser String
+        (char ':' >> someSpaces) <|> skipSome (oneOf [' ', '\t'])
+    lineCommentStart :: Parser Text
     lineCommentStart = choice
-        [ do { c <- oneOf "#%'"; return [c] }
-       , string "//"
-       , string "--"
-       ]
+        [ Data.Text.singleton <$> oneOf ['#', '%']
+        , string "//"
+        , string "--"
+        ]
     lineCommentCheck :: Parser Text
     lineCommentCheck = do
         startSeq <- lineCommentStart
         someSpaces
         checkThenSpaces
-        chars <- many $ noneOf "\n"
+        chars <- many $ noneOf ['\n']
         nextLines <- many $ try $ do
             void eol
             someSpaces
             void $ string startSeq
             someSpaces
-            many $ noneOf "\n"
+            many $ noneOf ['\n']
         return $ stripEnd $ pack $ Data.List.unlines $ chars : nextLines
-    blockCommentPairs :: [(String, String)]
+    blockCommentPairs :: [(Text, Text)]
     blockCommentPairs =
         [ ("/*", "*/"), ("{-", "-}"), ("<!--", "-->"), ("<#", "#>")
         , ("%{", "%}")
@@ -84,11 +88,11 @@ parser = do
     blockCommentCheck :: Int -> Parser Text
     blockCommentCheck depth =
         choice $ fmap (blockComment depth) blockCommentPairs
-    blockComment :: Int -> (String, String) -> Parser Text
+    blockComment :: Int -> (Text, Text) -> Parser Text
     blockComment depth (start, end) = do
         void $ string start
         linebreaks <- many $ try $ do
-            skipMany $ oneOf " \t\r"
+            skipMany $ oneOf [' ', '\t', '\r']
             char '\n'
         innerDepth <- many indent
         checkThenSpaces
@@ -105,7 +109,7 @@ parser = do
         lineT <- choice
             [ try $ fmap CheckComment lineCommentCheck
             , try $ CheckComment <$> blockCommentCheck depth
-            , try (some (noneOf "\n") >> return Line)
+            , try (some (noneOf ['\n']) >> return Line)
             , return EmptyLine
             ]
         return (filePath, read . show . unPos $ lineNo, depth, lineT)

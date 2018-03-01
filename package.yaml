@@ -16,7 +16,7 @@ dependencies:
 - diff-parse >= 0.2.1 && < 0.3.0
 - directory == 1.3.*
 - filepath >= 1.4.1.1 && < 2.0.0
-- megaparsec >= 5.3.1 && < 5.4.0
+- megaparsec >= 6.3.0 && < 6.4.0
 - range >= 0.1.2 && < 0.2.0
 - text == 1.*
 flags:
@@ -24,9 +24,16 @@ flags:
     description: Static link
     manual: true
     default: false
-ghc-options:
-- -Wall
-- -Werror
+when:
+- condition: os(darwin)
+  else:
+    ghc-options:
+    - -Werror
+  then:
+    ghc-options:
+    - -Werror
+    - -optP-Wno-nonportable-include-path
+    # The above option works around https://github.com/haskell/cabal/issues/4739
 library:
   source-dirs: src
   dependencies:
@@ -34,6 +41,7 @@ library:
   - github == 0.17.*
   - monad-parallel >= 0.7.2.2 && < 0.8.0.0
   ghc-options:
+  - -Wall
   - -fwarn-incomplete-uni-patterns
 executables:
   checkmate:
@@ -42,11 +50,12 @@ executables:
     dependencies:
     - checkmate
     - optparse-applicative >= 0.13.2.0 && < 0.15.0.0
-    - process >= 1.4.3.0 && < 1.5.0.0
+    - process >= 1.6.1.0 && < 1.7.0.0
     when:
     - condition: flag(static)
       then:
         ghc-options:
+        - -Wall
         - -fwarn-incomplete-uni-patterns
         - -threaded
         - -rtsopts
@@ -59,25 +68,27 @@ executables:
         - -fPIC
       else:
         ghc-options:
+        - -Wall
         - -fwarn-incomplete-uni-patterns
         - -threaded
         - -rtsopts
         - -with-rtsopts=-N
 tests:
   spec:
-    main: Spec.hs
+    main: Main.hs
     source-dirs: test
     dependencies:
     - bytestring >= 0.10.8.1 && < 0.11
     - checkmate
     - file-embed >= 0.0.10 && < 0.1.0
     - hspec >= 2.4.4 && < 3.0.0
-    - hspec-megaparsec >= 0.3.1 && < 0.4.0
+    - hspec-megaparsec >= 1.0.0 && < 1.1.0
     - interpolatedstring-perl6 == 1.*
     - QuickCheck >= 2.9.2 && < 3.0.0
     - quickcheck-text >= 0.1.2.1 && < 0.2.0.0
     - temporary >= 1.2.1 && < 1.3.0.0
     ghc-options:
+    - -Wall
     - -fno-warn-incomplete-uni-patterns
     - -fno-warn-missing-signatures
     - -rtsopts
@@ -85,7 +96,6 @@ tests:
     - -with-rtsopts=-N
     - -Wno-orphans
   hlint:
-    main: HLint.hs
-    source-dirs: test
+    main: hlint.hs
     dependencies:
     - hlint >= 2.0.9 && < 3

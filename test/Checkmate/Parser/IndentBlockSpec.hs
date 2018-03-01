@@ -13,7 +13,7 @@ import Data.Text.IO
 import Text.InterpolatedString.Perl6
 import Test.Hspec
 import Test.Hspec.Megaparsec
-import Text.Megaparsec
+import Text.Megaparsec hiding (ParseError)
 import System.IO.Temp
 
 import Checkmate.Check
@@ -51,10 +51,9 @@ function foo() {
                     "multiline\ntest\ntest2"
             ]
 
-parserSpec
-    :: String
-    -> (Text -> IO (FilePath, Either (ParseError (Token Text) Dec) Checklist))
-    -> Spec
+parserSpec :: String
+           -> (Text -> IO (FilePath, Either ParseError Checklist))
+           -> Spec
 parserSpec specName parse' = describe specName $ do
     it "returns an empty set if a given text is empty" $ do
         (_, parsed) <- parse' ""

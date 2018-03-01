@@ -1,4 +1,4 @@
-resolver: lts-9.5
+resolver: lts-10.7
 packages:
 - .
 - location:
@@ -6,9 +6,13 @@ packages:
     commit: d50776cfd72ec533a2c5667b755eba06de3c075f
   extra-dep: true
 - location:
-    git: git://github.com/dahlia/diff-parse.git
-    commit: cb86ec86d0e62af43a34dbe81482627a4e911957
+    git: git://github.com/mulby/diff-parse.git
+    commit: a2218afd2bb56e9afe96e543dad72abf5a881dfc
   extra-dep: true
 extra-deps: []
 flags: {}
 extra-package-dbs: []
+ghc-options:
+  "$locals": -fhide-source-paths
+# http://hsyl20.fr/home/posts/2018-01-15-ghc-hiding-source-and-object-paths.html
+require-stack-version: ">=1.6.3"

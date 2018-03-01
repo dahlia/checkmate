@@ -1,29 +1,33 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Checkmate.Parser.CheckFile
-    ( parseCheckFile
+    ( ParseError
+    , parseCheckFile
     , parseCheckFileText
     , parser
     ) where
 
 import Control.Monad
+import Data.Void
 
 import Data.Set
 import qualified Data.Text as T
 import Data.Text.IO
 import System.FilePath
-import Text.Megaparsec
-import Text.Megaparsec.Text
+import Text.Megaparsec hiding (ParseError)
+import Text.Megaparsec.Char
+import qualified Text.Megaparsec.Error as E
 
 import Checkmate.Check
 
-parseCheckFile :: FilePath
-               -> IO (Either (ParseError (Token T.Text) Dec) Checklist)
+type Parser = Parsec Void T.Text
+type ParseError = E.ParseError Char Void
+
+parseCheckFile :: FilePath -> IO (Either ParseError Checklist)
 parseCheckFile filePath = do
     input <- Data.Text.IO.readFile filePath
     return $ parseCheckFileText filePath input
 
-parseCheckFileText :: FilePath
-                   -> T.Text
-                   -> Either (ParseError (Token T.Text) Dec) Checklist
+parseCheckFileText :: FilePath -> T.Text -> Either ParseError Checklist
 parseCheckFileText filePath =
     parse (parser $ takeDirectory filePath) filePath
 
@@ -53,7 +57,7 @@ parser dirPath = do
     checkP = do
         bulletP
         texts <- (`sepBy1` try (eol >> notFollowedBy bulletP)) $ do
-            chars <- many $ noneOf "\n"
+            chars <- many $ noneOf ['\n']
             return $ T.pack chars
         let texts' = texts :: [T.Text]
         return $ T.strip $ T.intercalate (T.singleton '\n') texts'
