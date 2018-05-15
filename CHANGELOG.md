@@ -1,6 +1,12 @@
 Checkmate changelog
 ===================
 
+Version 0.3.4
+-------------
+
+To be released.
+
+
 Version 0.3.3
 -------------
 
