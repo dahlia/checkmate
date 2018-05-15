@@ -137,10 +137,17 @@ or [Stack][] since source tarballs also are distributed on [Hackage][]:
 stack install checkmate
 ~~~~~~~~
 
+Note: if you experience an error like `ConnectionFailure
+Network.BSD.getProtocolByName: does not exist (no such protocol name: tcp)`
+on Debian/Ubuntu Linux, try to install [*netbase*][netbase] package.
+(Read [this explanation][1] for details.)
+
 [every release]: https://github.com/spoqa/checkmate/releases
 [latest release]: https://github.com/spoqa/checkmate/releases/latest
 [Cabal]: https://www.haskell.org/cabal/
 [Stack]: https://www.haskellstack.org/
+[netbase]: https://packages.debian.org/search?keywords=netbase
+[1]: https://github.com/commercialhaskell/stack/issues/2372#issuecomment-234113085
 
 
 Integration with CI
