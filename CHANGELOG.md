@@ -9,6 +9,9 @@ To be released.
  -  The officially distributed executable binaries for Linux became
     dependent on [glibc].
 
+ -  Fixed a bug that it had failed to scan if any file in a change set is
+    deleted.
+
 [glibc]: https://www.gnu.org/software/libc/
 
 

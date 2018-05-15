@@ -112,9 +112,12 @@ jsChecklistFixture d =
     jsPath :: FilePath
     jsPath = d </> "subdir" </> "inner_sample.js"
 
+withTempDir :: (FilePath -> IO a) -> IO a
+withTempDir = withSystemTempDirectory "checkmate-test"
+
 withFixtureDir :: (FilePath -> IO a) -> IO a
 withFixtureDir action =
-    withSystemTempDirectory "checkmate-test" $ \ dirPath -> do
+    withTempDir $ \ dirPath -> do
         forM_ fixtures $ \ (filePath, contents) -> do
             let path = dirPath </> filePath
                 parent = takeDirectory path
@@ -125,22 +128,39 @@ withFixtureDir action =
 
 spec :: Spec
 spec = do
-    specify "discover" $
-        withFixtureDir $ \ dirPath -> do
-            checklist <- discover dirPath diffFixture
-            let expected = subdirChecklistFixture dirPath
-                    `union` pyChecklistFixture dirPath
-                    `union` jsChecklistFixture dirPath
-            checklist `shouldBe` expected
-    specify "discoverDirectory" $
-        withFixtureDir $ \ dirPath -> do
-            subdirChecks <- discoverDirectory dirPath "subdir"
-            subdirChecks `shouldBe` subdirChecklistFixture dirPath
-            rootChecks <- discoverDirectory dirPath "."
-            rootChecks `shouldBe` rootChecklistFixture dirPath
-    specify "discoverFile" $
-        withFixtureDir $ \ dirPath -> do
-            pyChecks <- discoverFile dirPath $ Prelude.head diffFixture
-            pyChecks `shouldBe` pyChecklistFixture dirPath
-            jsChecks <- discoverFile dirPath $ Prelude.last diffFixture
-            jsChecks `shouldBe` jsChecklistFixture dirPath
+    describe "discover" $ do
+        it "scans all relative checks" $
+            withFixtureDir $ \ dirPath -> do
+                checklist <- discover dirPath diffFixture
+                let expected = subdirChecklistFixture dirPath
+                        `union` pyChecklistFixture dirPath
+                        `union` jsChecklistFixture dirPath
+                checklist `shouldBe` expected
+        it "ignores files/directories that do not exist" $
+            withTempDir $ \ dirPath -> do
+                checklist <- discover dirPath diffFixture
+                checklist `shouldBe` []
+    describe "discoverDirectory" $ do
+        it "lists files in the given path" $
+            withFixtureDir $ \ dirPath -> do
+                subdirChecks <- discoverDirectory dirPath "subdir"
+                subdirChecks `shouldBe` subdirChecklistFixture dirPath
+                rootChecks <- discoverDirectory dirPath "."
+                rootChecks `shouldBe` rootChecklistFixture dirPath
+        it "ignores files/directories that do not exist" $
+            withTempDir $ \ dirPath -> do
+                checks <- discoverDirectory
+                    (dirPath </> "dir-do-not-exist")
+                    "dir-do-not-exist"
+                checks `shouldBe` []
+    describe "discoverFile" $ do
+        it "scans all relative checks" $
+            withFixtureDir $ \ dirPath -> do
+                pyChecks <- discoverFile dirPath $ Prelude.head diffFixture
+                pyChecks `shouldBe` pyChecklistFixture dirPath
+                jsChecks <- discoverFile dirPath $ Prelude.last diffFixture
+                jsChecks `shouldBe` jsChecklistFixture dirPath
+        it "ignores files/directories that do not exist" $
+            withTempDir $ \ dirPath -> do
+                checklist <- discoverFile dirPath $ Prelude.head diffFixture
+                checklist `shouldBe` []

@@ -6,6 +6,8 @@ module Checkmate.Discover
     , parseDiff
     ) where
 
+import System.IO.Error
+
 import Control.Monad.Parallel as P
 import Data.Range.Range as Range
 import Data.Set as S
@@ -69,7 +71,10 @@ discoverFile _ FileDelta { fileDeltaContent = Binary } = return S.empty
 discoverFile baseDirPath FileDelta { fileDeltaContent = Hunks hunks
                                    , fileDeltaDestFile = filePathT
                                    } = do
-    result <- parseSourceFile filePath
+    result <- catchIOError (parseSourceFile filePath) $ \ e ->
+        if isDoesNotExistError e
+           then return $ Right S.empty
+           else ioError e
     return $ case result of
         Left _ -> S.empty
         Right checklist -> fromList
