@@ -3,6 +3,7 @@ Checkmate
 
 [![Build Status][ci-badge]][ci]
 [![Hackage][hackage-badge]][hackage]
+[![GitHub release][release-badge]][latest release]
 
 Checkmate is a small program to generate human-readable checklists from
 a given patch (or pull request).  Leave `CHECK` comments (that are the same
@@ -16,6 +17,7 @@ when a part of the code is changed.
 [ci]: https://travis-ci.org/spoqa/checkmate
 [hackage-badge]: https://img.shields.io/hackage/v/checkmate.svg
 [hackage]: https://hackage.haskell.org/package/checkmate
+[release-badge]: https://img.shields.io/github/release/spoqa/checkmate.svg?label=download&colorB=4c1
 
 
 Situation
@@ -156,7 +158,7 @@ All examples assume the environment variables are defined:
     of the latest release, i.e.:
 
     ~~~~~~~ bash
-    CHECKMATE_DOWNLOAD_URL=https://github.com/spoqa/checkmate/releases/download/0.3.2/checkmate-linux-x86_64
+    CHECKMATE_DOWNLOAD_URL=https://github.com/spoqa/checkmate/releases/download/0.3.3/checkmate-linux-x86_64
     ~~~~~~~
 
 [personal API tokens]: https://github.com/blog/1509-personal-api-tokens

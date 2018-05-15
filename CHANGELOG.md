@@ -4,7 +4,7 @@ Checkmate changelog
 Version 0.3.3
 -------------
 
-To be released.
+Released on May 16, 2018.
 
  -  The officially distributed executable binaries for Linux became
     dependent on [glibc].
