@@ -6,6 +6,11 @@ Version 0.3.3
 
 To be released.
 
+ -  The officially distributed executable binaries for Linux became
+    dependent on [glibc].
+
+[glibc]: https://www.gnu.org/software/libc/
+
 
 Version 0.3.2
 -------------
