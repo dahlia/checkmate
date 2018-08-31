@@ -13,11 +13,11 @@ touches some code scopes having any `CHECK` comments, and lists the checks.
 It helps contributors and reviewers to remind matters that require attention
 when a part of the code is changed.
 
-[ci-badge]: https://travis-ci.org/spoqa/checkmate.svg?branch=master
-[ci]: https://travis-ci.org/spoqa/checkmate
+[ci-badge]: https://travis-ci.com/dahlia/checkmate.svg?branch=master
+[ci]: https://travis-ci.com/dahlia/checkmate
 [hackage-badge]: https://img.shields.io/hackage/v/checkmate.svg
 [hackage]: https://hackage.haskell.org/package/checkmate
-[release-badge]: https://img.shields.io/github/release/spoqa/checkmate.svg?label=download&colorB=4c1
+[release-badge]: https://img.shields.io/github/release/dahlia/checkmate.svg?label=download&colorB=4c1
 
 
 Situation
@@ -142,8 +142,8 @@ Network.BSD.getProtocolByName: does not exist (no such protocol name: tcp)`
 on Debian/Ubuntu Linux, try to install [*netbase*][netbase] package.
 (Read [this explanation][1] for details.)
 
-[every release]: https://github.com/spoqa/checkmate/releases
-[latest release]: https://github.com/spoqa/checkmate/releases/latest
+[every release]: https://github.com/dahlia/checkmate/releases
+[latest release]: https://github.com/dahlia/checkmate/releases/latest
 [Cabal]: https://www.haskell.org/cabal/
 [Stack]: https://www.haskellstack.org/
 [netbase]: https://packages.debian.org/search?keywords=netbase
@@ -165,7 +165,7 @@ All examples assume the environment variables are defined:
     of the latest release, i.e.:
 
     ~~~~~~~ bash
-    CHECKMATE_DOWNLOAD_URL=https://github.com/spoqa/checkmate/releases/download/0.3.3/checkmate-linux-x86_64
+    CHECKMATE_DOWNLOAD_URL=https://github.com/dahlia/checkmate/releases/download/0.3.3/checkmate-linux-x86_64
     ~~~~~~~
 
 [personal API tokens]: https://github.com/blog/1509-personal-api-tokens

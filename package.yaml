@@ -4,9 +4,9 @@ synopsis: Generate checklists relevant to a given patch
 category: Development
 author: Hong Minhee
 maintainer: hong.minhee@gmail.com
-copyright: (c) 2017 Hong Minhee
+copyright: "\xa9 2017\u20132018 Hong Minhee"
 license: AGPL-3
-github: spoqa/checkmate
+github: dahlia/checkmate
 stability: alpha
 extra-source-files:
 - README.md
