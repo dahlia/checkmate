@@ -8,8 +8,11 @@ To be released.
 
  -  Became internally independent from the [range] library.
  -  Became to use GHC 8.4 internally.
+ -  The officially distributed executable binaries for Linux became
+    independent from [glibc] again, and statically linked to [musl] instead.
 
 [range]: https://hackage.haskell.org/package/range
+[musl]: https://www.musl-libc.org/
 
 
 Version 0.3.3

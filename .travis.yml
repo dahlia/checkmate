@@ -1,4 +1,6 @@
 language: generic
+services:
+- docker
 cache:
   directories:
   - $HOME/.stack
@@ -21,10 +23,10 @@ script:
 - '[[ "$TRAVIS_TAG" = "" ]] || grep "$TRAVIS_TAG" README.md'
 - stack --no-terminal test --haddock --no-haddock-deps
 - stack exec -- checkmate github-travis --token "$CHECKMATE_GITHUB_ACCESS_TOKEN"
+before_deploy:
 - mkdir -p /tmp/checkmate-build
-- stack clean
-- stack build --flag checkmate:static --copy-bins
-- cp $HOME/.local/bin/checkmate /tmp/checkmate-build/checkmate-"$(uname -s | tr '[A-Z]' '[a-z]')-$(uname -m)"
+- docker build -t checkmate-binary-build .
+- docker run checkmate-binary-build cat /root/.local/bin/checkmate > /tmp/checkmate-build/checkmate-"$(docker run checkmate-binary-build bash -c 'echo $(uname -s | tr "[A-Z]" "[a-z]")-$(uname -m)')"
 - chmod +x /tmp/checkmate-build/checkmate-*
 - upx-ucl -9 /tmp/checkmate-build/checkmate-*
 deploy:
