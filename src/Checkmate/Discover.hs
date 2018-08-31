@@ -9,7 +9,6 @@ module Checkmate.Discover
 import System.IO.Error
 
 import Control.Monad.Parallel as P
-import Data.Range.Range as Range
 import Data.Set as S
 import Data.Text
 import System.Directory
@@ -18,9 +17,9 @@ import Text.Diff.Parse (parseDiff)
 import Text.Diff.Parse.Types
 
 import Checkmate.Check
-import Checkmate.Diff
 import Checkmate.Parser.CheckFile
 import Checkmate.Parser.IndentBlock
+import Checkmate.Range
 
 checkFileNames :: Set FilePath
 checkFileNames = fromList
@@ -85,5 +84,5 @@ discoverFile baseDirPath FileDelta { fileDeltaContent = Hunks hunks
   where
     filePath :: FilePath
     filePath = baseDirPath </> unpack filePathT
-    ranges :: [Range.Range Int]
-    ranges = [rangeFromDiffRange r | Hunk { hunkDestRange = r } <- hunks]
+    ranges :: [Range]
+    ranges = [r | Hunk { hunkDestRange = r } <- hunks]

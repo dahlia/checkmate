@@ -3,13 +3,13 @@
 {-# LANGUAGE QuasiQuotes #-}
 module Checkmate.RendererSpec where
 
-import Data.Range.Range
 import Data.Text
 import System.FilePath
 import Test.Hspec
 import Text.InterpolatedString.Perl6
 
 import Checkmate.Check
+import Checkmate.Range
 import Checkmate.Renderer
 
 fixture :: Checklist
@@ -20,9 +20,9 @@ fixture =
             "consectetur adipiscing elit,"
     , Check (Directory $ "b" </> "foo" </> "bar" </> ".") 3
             "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-    , Check (FileBlock ("b" </> "foo" </> "bar" </> "baz.c") $ SpanRange 8 21) 1
+    , Check (FileBlock ("b" </> "foo" </> "bar" </> "baz.c") $ Range 8 21) 1
             "Ut enim ad minim veniam,"
-    , Check (FileBlock ("b" </> "foo" </> "bar" </> "baz.c") $ SpanRange 9 21)
+    , Check (FileBlock ("b" </> "foo" </> "bar" </> "baz.c") $ Range 9 21)
             2 $
             "quis nostrud exercitation ullamco laboris nisi ut\n" `append`
             "aliquip ex ea commodo consequat."

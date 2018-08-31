@@ -7,7 +7,6 @@ import Control.Monad
 
 import Data.ByteString
 import Data.FileEmbed
-import Data.Range.Range (Range (..))
 import Data.Text
 import System.Directory
 import System.FilePath
@@ -65,19 +64,19 @@ subdirChecklistFixture dirPath =
 pyChecklistFixture :: FilePath -> Checklist
 pyChecklistFixture d =
     [ Check { checkScope = FileBlock { scopePath = pyPath
-                                     , scopeRange = SpanRange 2 25
+                                     , scopeRange = Range 2 24
                                      }
             , checkOrderIndex = 1
             , checkText = "module-level check"
             }
     , Check { checkScope = FileBlock { scopePath = pyPath
-                                     , scopeRange = SpanRange 11 15
+                                     , scopeRange = Range 11 5
                                      }
             , checkOrderIndex = 3
             , checkText = "function-level check 2"
             }
     , Check { checkScope = FileBlock { scopePath = pyPath
-                                     , scopeRange = SpanRange 14 15
+                                     , scopeRange = Range 14 2
                                      }
             , checkOrderIndex = 4
             , checkText = "nested function-level check"
@@ -90,19 +89,19 @@ pyChecklistFixture d =
 jsChecklistFixture :: FilePath -> Checklist
 jsChecklistFixture d =
     [ Check { checkScope = FileBlock { scopePath = jsPath
-                                     , scopeRange = SpanRange 2 21
+                                     , scopeRange = Range 2 20
                                      }
             , checkOrderIndex = 1
             , checkText = "global check"
             }
     , Check { checkScope = FileBlock { scopePath = jsPath
-                                     , scopeRange = SpanRange 10 20
+                                     , scopeRange = Range 10 11
                                      }
             , checkOrderIndex = 3
             , checkText = "function-level check 2"
             }
     , Check { checkScope = FileBlock { scopePath = jsPath
-                                     , scopeRange = SpanRange 13 17
+                                     , scopeRange = Range 13 5
                                      }
             , checkOrderIndex = 4
             , checkText = "closure check.\nIt can be multiline."

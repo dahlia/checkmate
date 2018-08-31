@@ -7,7 +7,6 @@ module Checkmate.Parser.IndentBlockSpec (spec) where
 import System.IO (hClose)
 
 import Data.FileEmbed
-import Data.Range.Range
 import Data.Text
 import Data.Text.IO
 import Text.InterpolatedString.Perl6
@@ -18,6 +17,7 @@ import System.IO.Temp
 
 import Checkmate.Check
 import Checkmate.Parser.IndentBlock
+import Checkmate.Range
 
 pythonFixture :: Text
 pythonFixture = $(embedStringFile "test/fixtures/sample.py")
@@ -47,7 +47,7 @@ function foo() {
     return true;
 |]
         parsed `shouldParse`
-            [ Check (FileBlock "a.js" $ SpanRange 3 8) 1
+            [ Check (FileBlock "a.js" $ Range 3 6) 1
                     "multiline\ntest\ntest2"
             ]
 
@@ -62,11 +62,11 @@ parserSpec specName parse' = describe specName $ do
         (path, parsed) <- parse' pythonFixture
         let s = FileBlock path
         parsed `shouldParse`
-            [ Check (s $ SpanRange 2 25) 1 "module-level check"
-            , Check (s $ SpanRange 6 7) 2 "function-level check"
-            , Check (s $ SpanRange 11 15) 3 "function-level check 2"
-            , Check (s $ SpanRange 14 15) 4 "nested function-level check"
-            , Check (s $ SpanRange 19 25) 5 "class-level check"
-            , Check (s $ SpanRange 23 25) 6
+            [ Check (s $ Range 2 24) 1 "module-level check"
+            , Check (s $ Range 6 2) 2 "function-level check"
+            , Check (s $ Range 11 5) 3 "function-level check 2"
+            , Check (s $ Range 14 2) 4 "nested function-level check"
+            , Check (s $ Range 19 7) 5 "class-level check"
+            , Check (s $ Range 23 3) 6
                     "method-level check.\nIt can be multiline."
             ]

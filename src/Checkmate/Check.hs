@@ -7,11 +7,12 @@ module Checkmate.Check
 
 import Data.Set
 import Data.Text
-import Data.Range.Range hiding (union)
 import System.FilePath
 
+import Checkmate.Range
+
 data Scope
-    = FileBlock { scopePath :: FilePath, scopeRange :: Range Int }
+    = FileBlock { scopePath :: FilePath, scopeRange :: Range }
     | Directory { scopePath :: FilePath }
     deriving (Show)
 

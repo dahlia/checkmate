@@ -10,7 +10,6 @@ import Control.Monad
 import Data.List
 import Data.Void
 
-import Data.Range.Range
 import Data.Set
 import Data.Text
 import Data.Text.IO
@@ -19,6 +18,7 @@ import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Error as E
 
 import Checkmate.Check
+import Checkmate.Range
 
 type Parser = Parsec Void Text
 type ParseError = E.ParseError Char Void
@@ -44,10 +44,10 @@ parser = do
                  ]
     return $ Data.Set.fromList checks
   where
-    mkRange :: (Int, Int) -> Range Int
+    mkRange :: (Int, Int) -> Range
     mkRange (from, to)
-     | from >= to = SingletonRange from
-     | otherwise = SpanRange from to
+     | from >= to = Range from 1
+     | otherwise = Range from (to - from + 1)
     indent :: Parser Int
     indent = choice
         [ tab >> return 8

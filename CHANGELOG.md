@@ -6,6 +6,10 @@ Version 0.4.0
 
 To be released.
 
+ -  Became internally independent from the [range] library.
+
+[range]: https://hackage.haskell.org/package/range
+
 
 Version 0.3.3
 -------------
