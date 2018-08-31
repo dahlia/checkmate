@@ -4,7 +4,7 @@ Checkmate changelog
 Version 0.4.0
 -------------
 
-To be released.
+Released on September 1, 2018.
 
  -  Became internally independent from the [range] library.
  -  Became to use GHC 8.4 internally.
