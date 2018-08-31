@@ -63,6 +63,6 @@ after_deploy:
 - mkdir -p ~/.stack/upload
 - |
   python -c 'import json, os; print(json.dumps({"username": os.environ["HACKAGE_USERNAME"], "password": os.environ["HACKAGE_PASSWORD"]}))' > ~/.stack/upload/credentials.json
-- "sed -i 's/^- -Werror$//g' package.yaml"   # Hackage disallows -Werror
+- sed -i -E 's/\s-Werror$/ -Wwarn/g' package.yaml   # Hackage disallows -Werror
 - stack --no-terminal sdist --ignore-check
 - stack --no-terminal upload --ignore-check --no-signature .
