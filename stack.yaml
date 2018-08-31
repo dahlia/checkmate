@@ -1,10 +1,6 @@
-resolver: lts-10.7
+resolver: lts-12.8
 packages:
 - .
-- location:
-    git: git://github.com/dahlia/github.git
-    commit: d50776cfd72ec533a2c5667b755eba06de3c075f
-  extra-dep: true
 - location:
     git: git://github.com/mulby/diff-parse.git
     commit: a2218afd2bb56e9afe96e543dad72abf5a881dfc

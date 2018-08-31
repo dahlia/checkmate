@@ -7,6 +7,7 @@ Version 0.4.0
 To be released.
 
  -  Became internally independent from the [range] library.
+ -  Became to use GHC 8.4 internally.
 
 [range]: https://hackage.haskell.org/package/range
 
